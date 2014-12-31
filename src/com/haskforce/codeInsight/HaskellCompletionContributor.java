@@ -6,6 +6,7 @@ import com.haskforce.HaskellIcons;
 import com.haskforce.HaskellLanguage;
 import com.haskforce.highlighting.annotation.external.GhcMod;
 import com.haskforce.highlighting.annotation.external.GhcModi;
+import com.haskforce.language.HaskellNamesValidator;
 import com.haskforce.psi.*;
 import com.haskforce.utils.ExecUtil;
 import com.intellij.codeInsight.completion.*;
@@ -19,6 +20,7 @@ import com.intellij.openapi.module.ModuleUtilCore;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.util.UserDataHolder;
+import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiComment;
 import com.intellij.psi.PsiElement;
@@ -76,9 +78,18 @@ public class HaskellCompletionContributor extends CompletionContributor {
                         if (completeQualifiedNames(position, imports, cacheHolder, result)) return;
                         if (completeNameImport(position, cacheHolder, result)) return;
                         completeLocalNames(position, imports, cacheHolder, result);
+                        completeKeyWords(position.getText(), result);
                     }
                 }
         );
+    }
+
+    private void completeKeyWords(String text, CompletionResultSet result) {
+        String strippedText = text.substring(0,text.indexOf("IntellijIdeaRulezz"));
+        if (HaskellNamesValidator.HASKELL_KEYWORDS.contains(strippedText)){
+            result.addElement(LookupElementBuilder.create(strippedText));
+        }
+
     }
 
     public static void completeKeywordImport(@NotNull final PsiElement position, @NotNull final CompletionResultSet result) {
