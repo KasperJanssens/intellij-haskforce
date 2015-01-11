@@ -2,17 +2,24 @@ package com.haskforce.index;
 
 import com.haskforce.HaskellFileType;
 import com.haskforce.psi.HaskellFile;
+import com.haskforce.psi.HaskellModuledecl;
+import com.haskforce.psi.HaskellPsiUtil;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.Condition;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiManager;
+import com.intellij.psi.search.FileTypeIndex;
 import com.intellij.psi.search.GlobalSearchScope;
+import com.intellij.psi.util.PsiTreeUtil;
+import com.intellij.psi.util.PsiUtil;
 import com.intellij.util.Function;
 import com.intellij.util.containers.ContainerUtil;
 import com.intellij.util.indexing.*;
 import com.intellij.util.io.EnumeratorStringDescriptor;
 import com.intellij.util.io.KeyDescriptor;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -43,6 +50,34 @@ public class HaskellModuleIndex extends ScalarIndexExtension<String> {
                 return psiFile instanceof HaskellFile ? (HaskellFile)psiFile : null;
             }
         });
+    }
+
+    @Nullable
+    public static HaskellModuledecl findModuleDeclWithName(@NotNull Project project,
+                                                           @NotNull final String moduleName,
+                                                           @NotNull GlobalSearchScope searchScope) {
+        final PsiManager psiManager = PsiManager.getInstance(project);
+        Collection<VirtualFile> virtualFiles = FileTypeIndex.getFiles(HaskellFileType.INSTANCE, searchScope);
+        List<HaskellModuledecl> moduledecls = ContainerUtil.mapNotNull(virtualFiles, new Function<VirtualFile, HaskellModuledecl>() {
+            @Override
+            public HaskellModuledecl fun(VirtualFile virtualFile) {
+                HaskellFile psiFile = (HaskellFile) psiManager.findFile(virtualFile);
+                if (moduleName.equals(psiFile.getModuleName())) {
+                    Collection<HaskellModuledecl> moduledecls =
+                            PsiTreeUtil.findChildrenOfType(psiFile, HaskellModuledecl.class);
+                    if (moduledecls.size() == 1) {
+                        return moduledecls.iterator().next();
+                    }
+                }
+                return null;
+
+            }
+        });
+        if (moduledecls.size() == 1){
+            return moduledecls.get(0);
+        }
+        return null;
+
     }
 
     @NotNull

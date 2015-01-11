@@ -116,6 +116,7 @@ public class HaskellUtil {
     }
 
     public static boolean definitionNode(@NotNull HaskellConid e) {
+
         final HaskellConstr constr = PsiTreeUtil.getParentOfType(e, HaskellConstr.class);
         final HaskellCon con;
         if (constr != null) {
@@ -374,24 +375,6 @@ public class HaskellUtil {
         return results;
     }
 
-/*    public static @NotNull String extractQualifierPrefix(@NotNull PsiElement element) {
-        PsiElement parent = element.getParent();
-        if (parent instanceof HaskellQvarid){
-            HaskellQvarid haskellQvarid = (HaskellQvarid) parent;
-            List<HaskellConid> conidList = haskellQvarid.getConidList();
-            StringBuilder qualifiedCallName = new StringBuilder();
-            for (HaskellConid haskellConid : conidList) {
-                qualifiedCallName.append((haskellConid.getName()));
-                qualifiedCallName.append('.');
-            }
-            if (qualifiedCallName.length() >0) {
-                qualifiedCallName.deleteCharAt(qualifiedCallName.length() - 1);
-                return qualifiedCallName.toString();
-            }
-        }
-        return "";
-    }*/
-
     public static List<PsiElementResolveResult> matchGlobalNamesUnqualified(
             PsiElement psiElement,
             List<PsiNamedElement> namedElements,
@@ -440,27 +423,25 @@ public class HaskellUtil {
         }
     }
 
+    public static @Nullable String extractImport(HaskellImpdecl importDeclaration){
+        List<HaskellQconid> qconidList = importDeclaration.getQconidList();
+        StringBuilder moduleNameBuilder = new StringBuilder();
+        for (HaskellQconid haskellQconid : qconidList) {
+            List<HaskellConid> conidList = haskellQconid.getConidList();
+            for (HaskellConid haskellConid : conidList) {
+                moduleNameBuilder.append(haskellConid.getName());
+                moduleNameBuilder.append('.');
+            }
+        }
+        moduleNameBuilder.deleteCharAt(moduleNameBuilder.length()-1);
+        return moduleNameBuilder.toString();
+    }
 
-    /**
-     * Not going to do it like this, going to this once and create a map of or so
-     * of imported modules, going to make the look up a bit more cpu friendly.
-     * For now this works.
-     */
+
     public static boolean importPresent(@NotNull String moduleName, @NotNull List<HaskellImpdecl> importDeclarations) {
         for (HaskellImpdecl importDeclaration : importDeclarations) {
-
-            List<HaskellQconid> qconidList = importDeclaration.getQconidList();
-            for (HaskellQconid haskellQconid : qconidList) {
-                List<HaskellConid> conidList = haskellQconid.getConidList();
-                StringBuilder moduleNameBuilder = new StringBuilder();
-                for (HaskellConid haskellConid : conidList) {
-                    moduleNameBuilder.append(haskellConid.getName());
-                    moduleNameBuilder.append('.');
-                }
-                moduleNameBuilder.deleteCharAt(moduleNameBuilder.length()-1);
-                if (moduleName.equals(moduleNameBuilder.toString())){
-                    return true;
-                }
+            if (moduleName.equals(extractImport(importDeclaration))){
+                return true;
             }
         }
         return false;

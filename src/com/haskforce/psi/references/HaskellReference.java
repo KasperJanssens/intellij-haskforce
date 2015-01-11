@@ -2,6 +2,7 @@ package com.haskforce.psi.references;
 
 import com.google.common.collect.Iterables;
 import com.haskforce.codeInsight.HaskellCompletionContributor;
+import com.haskforce.index.HaskellModuleIndex;
 import com.haskforce.psi.*;
 import com.haskforce.psi.impl.HaskellPsiImplUtil;
 import com.haskforce.utils.HaskellUtil;
@@ -9,6 +10,7 @@ import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.psi.*;
+import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.IncorrectOperationException;
 import org.jetbrains.annotations.NotNull;
@@ -43,12 +45,31 @@ public class HaskellReference extends PsiReferenceBase<PsiNamedElement> implemen
         // Make sure that we only complete the last conid in a qualified expression.
         if (myElement instanceof HaskellConid) {
             // Don't resolve a module import to a constructor.
-            if (PsiTreeUtil.getParentOfType(myElement, HaskellImpdecl.class) != null) { return EMPTY_RESOLVE_RESULT; }
             HaskellQconid qconid = PsiTreeUtil.getParentOfType(myElement, HaskellQconid.class);
             if (qconid == null) { return EMPTY_RESOLVE_RESULT; }
             if (!myElement.equals(Iterables.getLast(qconid.getConidList()))) { return EMPTY_RESOLVE_RESULT; }
         }
         Project project = myElement.getProject();
+
+        List<ResolveResult> results = new ArrayList<ResolveResult>(20);
+
+        HaskellImpdecl impDecl =
+                PsiTreeUtil.getParentOfType(myElement, HaskellImpdecl.class);
+
+        if(impDecl != null){
+            String moduleName = HaskellUtil.extractImport(impDecl);
+            GlobalSearchScope searchScope = GlobalSearchScope.allScope(project);
+            HaskellModuledecl moduleDecl = HaskellModuleIndex.findModuleDeclWithName(project,
+                   moduleName, searchScope);
+            if (moduleDecl != null){
+                HaskellQconid qconid = moduleDecl.getQconid();
+                List<HaskellConid> conidList = qconid.getConidList();
+                if (conidList.size() > 0){
+                    results.add(new PsiElementResolveResult(conidList.get(conidList.size() - 1)));
+                    return results.toArray(new ResolveResult[results.size()]);
+                }
+            }
+        }
 
         /**
          * TODO
@@ -60,7 +81,7 @@ public class HaskellReference extends PsiReferenceBase<PsiNamedElement> implemen
 
         // Guess 20 variants tops most of the time in any real code base.
         final List<PsiNamedElement> namedElements = HaskellUtil.findDefinitionNode(project, name, myElement);
-        List<ResolveResult> results = new ArrayList<ResolveResult>(20);
+
         List<HaskellImpdecl> importDeclarations = getImportDeclarations(myElement);
 
         String qualifiedCallName = HaskellUtil.getQualifiedPrefix(myElement);

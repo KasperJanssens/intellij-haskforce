@@ -1,0 +1,2 @@
+module Bar.Foo where
+

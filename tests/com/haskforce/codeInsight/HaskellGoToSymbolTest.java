@@ -1,6 +1,8 @@
 package com.haskforce.codeInsight;
 
 import com.haskforce.HaskellLightPlatformCodeInsightFixtureTestCase;
+import com.haskforce.psi.HaskellConid;
+import com.haskforce.psi.HaskellModuledecl;
 import com.haskforce.psi.HaskellVarid;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
@@ -264,6 +266,24 @@ public class HaskellGoToSymbolTest extends HaskellLightPlatformCodeInsightFixtur
         HaskellVarid varId = (HaskellVarid) psiElement;
         PsiReference reference = varId.getReference();
         HaskellVarid referencedElement = (HaskellVarid) reference.resolve();
+        assertNotSame(psiElement, referencedElement);
+        assertEquals(expectedStartOffset, referencedElement.getTextRange().getStartOffset());
+    }
+
+    public void testGoToSymbolFunction_Impdecl() {
+        PsiFile[] psiFiles = myFixture.configureByFiles(
+                "Impdecl/Bar/Foo.hs",
+                "Impdecl/Baz/Foo.hs",
+                "Impdecl/Boo.hs"
+        );
+        PsiFile barFoo = psiFiles[0];
+        PsiFile boo = psiFiles[2];
+        String textOfFile = barFoo.getText();
+        int expectedStartOffset = textOfFile.indexOf("Bar.Foo") + 4;
+        HaskellModuledecl psiElement = (HaskellModuledecl)boo
+                .findElementAt(myFixture.getCaretOffset()).getParent();
+        PsiReference reference = psiElement.getReference();
+        PsiElement referencedElement =  reference.resolve();
         assertNotSame(psiElement, referencedElement);
         assertEquals(expectedStartOffset, referencedElement.getTextRange().getStartOffset());
     }

@@ -252,6 +252,9 @@ public class HaskellCompletionContributor extends CompletionContributor {
 
     public static boolean completeFunctionLocalNames(@NotNull final PsiElement position,
                                                      @NotNull final CompletionResultSet result){
+        if (PsiTreeUtil.getParentOfType(position,HaskellBody.class) == null){
+            return false;
+        }
         List<PsiElement> allDefinitionsInScope = HaskellUtil.getAllDefinitionsInScope(position);
         for (PsiElement psiElement : allDefinitionsInScope) {
             result.addElement(LookupElementBuilder.create((PsiNamedElement)psiElement));
