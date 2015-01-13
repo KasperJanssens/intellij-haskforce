@@ -9,6 +9,8 @@ import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiReference;
 import jdk.nashorn.internal.ir.annotations.Ignore;
 
+import java.util.List;
+
 public class HaskellGoToSymbolTest extends HaskellLightPlatformCodeInsightFixtureTestCase {
     public HaskellGoToSymbolTest() {
         super("codeInsight", "codeInsight");
@@ -282,7 +284,9 @@ public class HaskellGoToSymbolTest extends HaskellLightPlatformCodeInsightFixtur
         int expectedStartOffset = textOfFile.indexOf("Bar.Foo") + 4;
         HaskellModuledecl psiElement = (HaskellModuledecl)boo
                 .findElementAt(myFixture.getCaretOffset()).getParent();
-        PsiReference reference = psiElement.getReference();
+        List<HaskellConid> conidList = psiElement.getQconid().getConidList();
+        HaskellConid haskellConid = conidList.get(conidList.size() - 1);
+        PsiReference reference = haskellConid.getReference();
         PsiElement referencedElement =  reference.resolve();
         assertNotSame(psiElement, referencedElement);
         assertEquals(expectedStartOffset, referencedElement.getTextRange().getStartOffset());

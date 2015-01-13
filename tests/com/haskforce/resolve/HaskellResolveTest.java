@@ -18,5 +18,4 @@ public class HaskellResolveTest extends HaskellResolveTestCase {
     public void testFunctionWithSignature00001() { doTest(); }
     public void testNewtype00001() { doTest(); }
     public void testImpdecl00001() { doTest(); }
-    public void testImpdecl00002() { doTest(); }
 }
