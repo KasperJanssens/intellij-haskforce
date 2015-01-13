@@ -6,6 +6,7 @@ import com.haskforce.HaskellIcons;
 import com.haskforce.HaskellLanguage;
 import com.haskforce.highlighting.annotation.external.GhcMod;
 import com.haskforce.highlighting.annotation.external.GhcModi;
+import com.haskforce.language.HaskellNamesValidator;
 import com.haskforce.psi.*;
 import com.haskforce.utils.ExecUtil;
 import com.haskforce.utils.HaskellUtil;
@@ -18,6 +19,7 @@ import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleUtilCore;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.Condition;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.util.UserDataHolder;
 import com.intellij.patterns.PlatformPatterns;
@@ -26,11 +28,13 @@ import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.ArrayUtil;
 import com.intellij.util.Function;
 import com.intellij.util.ProcessingContext;
-import com.intellij.util.containers.ContainerUtil;
+import com.intellij.util.containers.*;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.concurrent.Future;
 
 /**
@@ -83,47 +87,31 @@ public class HaskellCompletionContributor extends CompletionContributor {
 
     /**
      * Will only propose the haskell keywords when inside a haskell body. Will not take into account the specific position
-     * yet, just make sure
+     * yet, just make sure it's inside the body, so as to not propose keywords other than import in imports
      */
     public static void completeHaskellKeywords(@NotNull final PsiElement position, @NotNull final CompletionResultSet result) {
         if (HaskellUtil.isInsideBody(position)){
-            result.addElement(LookupElementBuilder.create("do"));
-            result.addElement(LookupElementBuilder.create("of"));
-            result.addElement(LookupElementBuilder.create("let"));
-            result.addElement(LookupElementBuilder.create("where"));
-            result.addElement(LookupElementBuilder.create("<-"));
-            result.addElement(LookupElementBuilder.create("return"));
-            result.addElement(LookupElementBuilder.create("="));
-            result.addElement(LookupElementBuilder.create("instance"));
-            result.addElement(LookupElementBuilder.create("class"));
+            Set<String> haskellKeywords = HaskellNamesValidator.HASKELL_KEYWORDS;
+            for (String haskellKeyword : haskellKeywords) {
+                result.addElement(LookupElementBuilder.create(haskellKeyword));
+            }
         }
-
-
     }
 
     public static void completeKeywordImport(@NotNull final PsiElement position, @NotNull final CompletionResultSet result) {
-        PsiElement el = position;
-        while (el != null) {
-            PsiElement parent = el.getParent();
-            if (parent instanceof HaskellImpdecl) {
-                // We shouldn't completion "import" if we're already in an import.
-                return;
-            }
-            if (parent instanceof HaskellBody) {
-                break;
-            }
-            el = parent;
+        if (HaskellPsiUtil.findFirstParent(position, HaskellImpdecl.class) != null) return;
+        HaskellBody body = HaskellPsiUtil.findFirstParent(position, HaskellBody.class);
+        PsiElement root = body == null ? position.getContainingFile() : body;
+        PsiElement topLevel = PsiTreeUtil.findPrevParent(root, position);
+        // If we have spaces, then we are into an expression, definition, etc. and shouldn't provide completion.
+        if (topLevel.getText().contains(" ")) return;
+        for (PsiElement child : root.getChildren()) {
+            if (PsiTreeUtil.instanceOf(child,
+                    HaskellPpragma.class, HaskellImpdecl.class, PsiWhiteSpace.class, PsiComment.class)) continue;
+            // If something else other than the allowed elements appear before our element, don't provide completion.
+            if (!child.equals(topLevel)) return;
         }
-        PsiElement prev = getPrevSiblingWhere(new Function<PsiElement, Boolean>() {
-            @Override
-            public Boolean fun(PsiElement psiElement) {
-                return !PsiTreeUtil.instanceOf(psiElement, HaskellPpragma.class, PsiWhiteSpace.class, PsiComment.class);
-            }
-        }, el);
-        // Check if previous sibling is an import or does not exist (first import).
-        if (prev == null || prev instanceof HaskellImpdecl) {
-            result.addElement(stringToLookupElement.fun("import "));
-        }
+        result.addElement(stringToLookupElement.fun("import "));
     }
 
     public static void completeKeywordQualified(@NotNull final PsiElement position, @NotNull final CompletionResultSet result) {

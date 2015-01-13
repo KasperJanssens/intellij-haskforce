@@ -68,6 +68,7 @@
   psiImplUtilClass="com.haskforce.psi.impl.HaskellPsiImplUtil"
 
   implements("varid|conid")="com.haskforce.psi.HaskellNamedElement"
+  implements("qqblob")="com.intellij.psi.PsiLanguageInjectionHost"
   extends("varid|conid")="com.haskforce.psi.impl.HaskellNamedStubbedPsiElementBase<?>"
   elementTypeFactory("varid|conid")="com.haskforce.psi.impl.HaskellElementTypeFactory.factory"
 
@@ -321,6 +322,7 @@ atype ::= [singlequote] ntgtycon ['##'|'#']
         | [singlequote] ('(' [<<sequence ctype>>] ')' | '[' <<sequence ctype>> ']')
         | integertoken
         | pstringtoken
+        | foralltype
 
 private ntgtycon ::=  '(#' commas '#)'
                    | '(' ('->' | commas) ')'
@@ -408,7 +410,8 @@ private lexp ::= "\\case" altslist
                | "case" exp "of" altslist
                | "do" open stmts close
                | "mdo" open stmts close
-               | "proc" aexp "->" exp
+               // proc might just be a variable name.
+               | "proc" (aexp "->" exp | aexp*)
                | aexp+ {pin(".*")=2}
 
 private aexp ::= parensplice exp i ')'
@@ -424,10 +427,14 @@ private aexp ::= parensplice exp i ')'
                | gcon
                | qvar
 
+qqblob ::= qqtext+ {
+    methods=[isValidHost updateText createLiteralTextEscaper]
+}
+
 private thaexp ::= '[|' e (exp [semi])+ e '|]'
                  // TODO: Enable more precise TH parsing with t/p/d.
 //                 | '[' ("t" '|' ctype | "p" '|' infixexp |  "d" '|' open topdecls close ) '|]'
-                 | qqopen i qvarid i '|' qqtext+ '|]'
+                 | qqopen i qvarid i '|' qqblob '|]'
 //               | "[||" exp '||]'
 
 
@@ -537,7 +544,7 @@ ppragma ::= openpragma PRAGMA+ closepragma {pin(".*")=3}
 // private symbol ::= symbol1 | '=' | '|' | '#' |
 
 // Stripped down version of symbol; real definition in comment above.
-private symbol1 ::= '!' | '$' | '%' | '&' | '*' | '+' | '.' | '/' | '<' | '>' | '?' | '@'
+private symbol1 ::= '!' | '#' | '$' | '%' | '&' | '*' | '+' | '.' | '/' | '<' | '>' | '?' | '@'
          | '\' | '^' | '-' | '~' | ':'
 varid ::= (varidRegexp | "as" | "rec" | "qualified") {
         methods=[getName getNameIdentifier getReference setName getPresentation]

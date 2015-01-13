@@ -7,7 +7,6 @@ import com.haskforce.psi.HaskellVarid;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiReference;
-import jdk.nashorn.internal.ir.annotations.Ignore;
 
 import java.util.List;
 

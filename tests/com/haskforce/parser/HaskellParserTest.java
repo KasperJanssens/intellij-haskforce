@@ -96,17 +96,20 @@ public class HaskellParserTest extends HaskellParserTestBase {
     public void testLambda00001()       { doTest(true, true); }
     public void testMagicHash00001()    { doTest(true, true); }
     public void testModule00001()       { doTest(true, true); }
+    public void testOperator00001()     { doTest(true, true); }
     public void testRecord00001()       { doTest(true, true); }
     public void testRecord00002()       { doTest(true, true); }
     public void testPragma00001()       { doTest(true, true); }
     public void testPragma00002()       { doTest(true, true); }
     public void testPragma00003()       { doTest(true, true); }
     public void testPragma00004()       { doTest(true, true); }
+    public void testProc00001()         { doTest(true, true); }
     public void testString00001()       { doTest(true, true); }
     public void testString00002()       { doTest(true, true); }
     public void testString00003()       { doTest(true, true); }
     public void testString00004()       { doTest(true, false); }
     public void testString00005()       { doTest(true, true); }
+    public void testString00006()       { doTest(true, true); }
     public void testTempHask00001()     { doTest(true, true); }
     public void testTempHask00002()     { doTest(true, true); }
     public void testTempHask00003()     { doTest(true, true); }
@@ -118,6 +121,7 @@ public class HaskellParserTest extends HaskellParserTestBase {
     public void testType00003()         { doTest(true, true); }
     public void testType00004()         { doTest(true, true); }
     public void testType00005()         { doTest(true, true); }
+    public void testType00006()         { doTest(true, true); }
     public void testVar00001()          { doTest(true, true); }
     public void testQuote00001()        { doTest(true, true); }
     // public void testParseMonad()        { doTest(true, true); }
