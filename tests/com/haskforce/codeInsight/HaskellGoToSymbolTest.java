@@ -30,6 +30,36 @@ public class HaskellGoToSymbolTest extends HaskellLightPlatformCodeInsightFixtur
         assertEquals(expectedStartOffset, referencedElement.getTextRange().getStartOffset());
     }
 
+    public void testNewtypeParameter(){
+        myFixture.configureByFile(getTestName(false)+".hs");
+        PsiFile file = myFixture.getFile();
+        String textOfFile = file.getText();
+        int expectedStartOffset= textOfFile.indexOf("ResultVar param") +10;
+        PsiElement psiElement = file
+                .findElementAt(myFixture.getCaretOffset()).getParent();
+        HaskellVarid varId = (HaskellVarid) psiElement;
+        PsiReference reference = varId.getReference();
+        HaskellVarid referencedElement = (HaskellVarid)reference.resolve();
+        assertEquals(varId.getName(), referencedElement.getName());
+        assertNotSame(psiElement, referencedElement);
+        assertEquals(expectedStartOffset, referencedElement.getTextRange().getStartOffset());
+    }
+
+    public void testGoToSymbolFunction_GADT(){
+        myFixture.configureByFile(getTestName(false)+".hs");
+        PsiFile file = myFixture.getFile();
+        String textOfFile = file.getText();
+        int expectedStartOffset= textOfFile.indexOf("f (B _ end)") +7;
+        PsiElement psiElement = file
+                .findElementAt(myFixture.getCaretOffset()).getParent();
+        HaskellVarid varId = (HaskellVarid) psiElement;
+        PsiReference reference = varId.getReference();
+        HaskellVarid referencedElement = (HaskellVarid)reference.resolve();
+        assertEquals(varId.getName(), referencedElement.getName());
+        assertNotSame(psiElement, referencedElement);
+        assertEquals(expectedStartOffset, referencedElement.getTextRange().getStartOffset());
+    }
+
 
     public void testGoToSymbolFunction_Pattern_CaretOnVariable(){
         myFixture.configureByFile(getTestName(false)+".hs");
@@ -147,6 +177,52 @@ public class HaskellGoToSymbolTest extends HaskellLightPlatformCodeInsightFixtur
         PsiReference reference = haskellConid.getReference();
         HaskellConid referencedElement = (HaskellConid)reference.resolve();
         assertNull(referencedElement);
+    }
+
+    public void testGoToSymbolFunction_Records(){
+        myFixture.configureByFile(getTestName(false)+".hs");
+        PsiFile file = myFixture.getFile();
+        String textOfFile = file.getText();
+        int expectedStartOffset= textOfFile.indexOf("Pool maybeA") + 5;
+        PsiElement psiElement = file
+                .findElementAt(myFixture.getCaretOffset()).getParent();
+        HaskellVarid varId = (HaskellVarid) psiElement;
+        PsiReference reference = varId.getReference();
+        HaskellVarid referencedElement = (HaskellVarid)reference.resolve();
+        assertNotSame(psiElement, referencedElement);
+        assertEquals(expectedStartOffset,referencedElement.getTextRange().getStartOffset());
+    }
+
+    /**
+     * TODO
+     * Can only make this test work if findDefinitionNode returns the type declaration as well
+     */
+    public void ignoreTestGoToSymbolFunction_RecordsType(){
+        myFixture.configureByFile(getTestName(false)+".hs");
+        PsiFile file = myFixture.getFile();
+        String textOfFile = file.getText();
+        int expectedStartOffset= textOfFile.indexOf("data Pool") + 5;
+        PsiElement psiElement = file
+                .findElementAt(myFixture.getCaretOffset()).getParent();
+        HaskellConid conId = (HaskellConid) psiElement;
+        PsiReference reference = conId.getReference();
+        HaskellConid referencedElement = (HaskellConid)reference.resolve();
+        assertNotSame(psiElement, referencedElement);
+        assertEquals(expectedStartOffset,referencedElement.getTextRange().getStartOffset());
+    }
+
+    public void testGoToSymbolFunction_RecordsConstructor(){
+        myFixture.configureByFile(getTestName(false)+".hs");
+        PsiFile file = myFixture.getFile();
+        String textOfFile = file.getText();
+        int expectedStartOffset= textOfFile.indexOf("Pool (Maybe a)");
+        PsiElement psiElement = file
+                .findElementAt(myFixture.getCaretOffset()).getParent();
+        HaskellConid conId = (HaskellConid) psiElement;
+        PsiReference reference = conId.getReference();
+        HaskellConid referencedElement = (HaskellConid)reference.resolve();
+        assertNotSame(psiElement, referencedElement);
+        assertEquals(expectedStartOffset,referencedElement.getTextRange().getStartOffset());
     }
 
 
@@ -466,5 +542,8 @@ public class HaskellGoToSymbolTest extends HaskellLightPlatformCodeInsightFixtur
         assertNotSame(psiElement, referencedElement);
         assertEquals(expectedStartOffset, referencedElement.getTextRange().getStartOffset());
     }
+
+
+
 
 }

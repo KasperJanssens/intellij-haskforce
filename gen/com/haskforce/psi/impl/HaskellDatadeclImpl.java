@@ -71,12 +71,6 @@ public class HaskellDatadeclImpl extends HaskellCompositeElementImpl implements 
 
   @Override
   @NotNull
-  public List<HaskellTvBndr> getTvBndrList() {
-    return PsiTreeUtil.getChildrenOfTypeAsList(this, HaskellTvBndr.class);
-  }
-
-  @Override
-  @NotNull
   public List<HaskellTypee> getTypeeList() {
     return PsiTreeUtil.getChildrenOfTypeAsList(this, HaskellTypee.class);
   }
@@ -103,12 +97,6 @@ public class HaskellDatadeclImpl extends HaskellCompositeElementImpl implements 
   @Nullable
   public PsiElement getDeriving() {
     return findChildByType(DERIVING);
-  }
-
-  @Override
-  @Nullable
-  public PsiElement getForalltoken() {
-    return findChildByType(FORALLTOKEN);
   }
 
   @Override
@@ -151,12 +139,6 @@ public class HaskellDatadeclImpl extends HaskellCompositeElementImpl implements 
   @Nullable
   public PsiElement getLparen() {
     return findChildByType(LPAREN);
-  }
-
-  @Override
-  @Nullable
-  public PsiElement getPeriod() {
-    return findChildByType(PERIOD);
   }
 
   @Override
