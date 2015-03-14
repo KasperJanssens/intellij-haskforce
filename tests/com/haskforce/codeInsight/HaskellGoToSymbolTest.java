@@ -1,7 +1,6 @@
 package com.haskforce.codeInsight;
 
 import com.haskforce.HaskellLightPlatformCodeInsightFixtureTestCase;
-import com.haskforce.cabal.psi.CabalVarid;
 import com.haskforce.psi.HaskellCon;
 import com.haskforce.psi.HaskellConid;
 import com.haskforce.psi.HaskellVarid;
@@ -21,6 +20,36 @@ public class HaskellGoToSymbolTest extends HaskellLightPlatformCodeInsightFixtur
         PsiFile file = myFixture.getFile();
         String textOfFile = file.getText();
         int expectedStartOffset= textOfFile.indexOf("let seven") +4;
+        PsiElement psiElement = file
+                .findElementAt(myFixture.getCaretOffset()).getParent();
+        HaskellVarid varId = (HaskellVarid) psiElement;
+        PsiReference reference = varId.getReference();
+        HaskellVarid referencedElement = (HaskellVarid)reference.resolve();
+        assertEquals(varId.getName(), referencedElement.getName());
+        assertNotSame(psiElement, referencedElement);
+        assertEquals(expectedStartOffset, referencedElement.getTextRange().getStartOffset());
+    }
+
+    public void testNewtypeParameter(){
+        myFixture.configureByFile(getTestName(false)+".hs");
+        PsiFile file = myFixture.getFile();
+        String textOfFile = file.getText();
+        int expectedStartOffset= textOfFile.indexOf("ResultVar param") +10;
+        PsiElement psiElement = file
+                .findElementAt(myFixture.getCaretOffset()).getParent();
+        HaskellVarid varId = (HaskellVarid) psiElement;
+        PsiReference reference = varId.getReference();
+        HaskellVarid referencedElement = (HaskellVarid)reference.resolve();
+        assertEquals(varId.getName(), referencedElement.getName());
+        assertNotSame(psiElement, referencedElement);
+        assertEquals(expectedStartOffset, referencedElement.getTextRange().getStartOffset());
+    }
+
+    public void testGoToSymbolFunction_GADT(){
+        myFixture.configureByFile(getTestName(false)+".hs");
+        PsiFile file = myFixture.getFile();
+        String textOfFile = file.getText();
+        int expectedStartOffset= textOfFile.indexOf("f (B _ end)") +7;
         PsiElement psiElement = file
                 .findElementAt(myFixture.getCaretOffset()).getParent();
         HaskellVarid varId = (HaskellVarid) psiElement;
@@ -150,6 +179,52 @@ public class HaskellGoToSymbolTest extends HaskellLightPlatformCodeInsightFixtur
         assertNull(referencedElement);
     }
 
+    public void testGoToSymbolFunction_Records(){
+        myFixture.configureByFile(getTestName(false)+".hs");
+        PsiFile file = myFixture.getFile();
+        String textOfFile = file.getText();
+        int expectedStartOffset= textOfFile.indexOf("Pool maybeA") + 5;
+        PsiElement psiElement = file
+                .findElementAt(myFixture.getCaretOffset()).getParent();
+        HaskellVarid varId = (HaskellVarid) psiElement;
+        PsiReference reference = varId.getReference();
+        HaskellVarid referencedElement = (HaskellVarid)reference.resolve();
+        assertNotSame(psiElement, referencedElement);
+        assertEquals(expectedStartOffset,referencedElement.getTextRange().getStartOffset());
+    }
+
+    /**
+     * TODO
+     * Can only make this test work if findDefinitionNode returns the type declaration as well
+     */
+    public void ignoreTestGoToSymbolFunction_RecordsType(){
+        myFixture.configureByFile(getTestName(false)+".hs");
+        PsiFile file = myFixture.getFile();
+        String textOfFile = file.getText();
+        int expectedStartOffset= textOfFile.indexOf("data Pool") + 5;
+        PsiElement psiElement = file
+                .findElementAt(myFixture.getCaretOffset()).getParent();
+        HaskellConid conId = (HaskellConid) psiElement;
+        PsiReference reference = conId.getReference();
+        HaskellConid referencedElement = (HaskellConid)reference.resolve();
+        assertNotSame(psiElement, referencedElement);
+        assertEquals(expectedStartOffset,referencedElement.getTextRange().getStartOffset());
+    }
+
+    public void testGoToSymbolFunction_RecordsConstructor(){
+        myFixture.configureByFile(getTestName(false)+".hs");
+        PsiFile file = myFixture.getFile();
+        String textOfFile = file.getText();
+        int expectedStartOffset= textOfFile.indexOf("Pool (Maybe a)");
+        PsiElement psiElement = file
+                .findElementAt(myFixture.getCaretOffset()).getParent();
+        HaskellConid conId = (HaskellConid) psiElement;
+        PsiReference reference = conId.getReference();
+        HaskellConid referencedElement = (HaskellConid)reference.resolve();
+        assertNotSame(psiElement, referencedElement);
+        assertEquals(expectedStartOffset,referencedElement.getTextRange().getStartOffset());
+    }
+
 
 
     /**
@@ -188,7 +263,7 @@ public class HaskellGoToSymbolTest extends HaskellLightPlatformCodeInsightFixtur
         PsiFile[] psiFiles = myFixture.configureByFiles(
                 "QualifiedImport/Usage.hs",
                 "QualifiedImport/Definition.hs"
-                );
+        );
         PsiFile usage = psiFiles[0];
         PsiFile definition = psiFiles[1];
         String textOfFile = definition.getText();
@@ -206,7 +281,7 @@ public class HaskellGoToSymbolTest extends HaskellLightPlatformCodeInsightFixtur
         PsiFile[] psiFiles = myFixture.configureByFiles(
                 "QualifiedImportNoAs/Usage.hs",
                 "QualifiedImportNoAs/Definition.hs"
-                );
+        );
         PsiFile usage = psiFiles[0];
         PsiFile definition = psiFiles[1];
         String textOfFile = definition.getText();
@@ -224,7 +299,7 @@ public class HaskellGoToSymbolTest extends HaskellLightPlatformCodeInsightFixtur
         PsiFile[] psiFiles = myFixture.configureByFiles(
                 "QualifiedImportMultipleLevels/Usage/Usage.hs",
                 "QualifiedImportMultipleLevels/Definition/Definition.hs"
-                );
+        );
         PsiFile usage = psiFiles[0];
         PsiFile definition = psiFiles[1];
         String textOfFile = definition.getText();
@@ -242,7 +317,7 @@ public class HaskellGoToSymbolTest extends HaskellLightPlatformCodeInsightFixtur
         PsiFile[] psiFiles = myFixture.configureByFiles(
                 "QualifiedImportMultipleLevels_LocalFunctionWithSameName/Usage/Usage.hs",
                 "QualifiedImportMultipleLevels_LocalFunctionWithSameName/Definition/Definition.hs"
-                );
+        );
         PsiFile usage = psiFiles[0];
         PsiFile definition = psiFiles[1];
         String textOfFile = definition.getText();
@@ -260,7 +335,7 @@ public class HaskellGoToSymbolTest extends HaskellLightPlatformCodeInsightFixtur
         PsiFile[] psiFiles = myFixture.configureByFiles(
                 "QualifiedImportMultipleLevels_LocalFunctionWithSameName_CaretOnLocal/Usage/Usage.hs",
                 "QualifiedImportMultipleLevels_LocalFunctionWithSameName_CaretOnLocal/Definition/Definition.hs"
-                );
+        );
         PsiFile usage = psiFiles[0];
         String textOfFile = usage.getText();
         int expectedStartOffset = textOfFile.indexOf("seven ::");
@@ -277,7 +352,7 @@ public class HaskellGoToSymbolTest extends HaskellLightPlatformCodeInsightFixtur
         PsiFile[] psiFiles = myFixture.configureByFiles(
                 "QualifiedImportMultipleLevels_AsPartConsistsOfMultipleCons/Usage/Usage.hs",
                 "QualifiedImportMultipleLevels_AsPartConsistsOfMultipleCons/Definition/Definition.hs"
-                );
+        );
         PsiFile usage = psiFiles[0];
         PsiFile definition = psiFiles[1];
         String textOfFile = definition.getText();
@@ -351,7 +426,7 @@ public class HaskellGoToSymbolTest extends HaskellLightPlatformCodeInsightFixtur
         PsiFile[] psiFiles = myFixture.configureByFiles(
                 "QualifiedImport_QualifierResolves/Usage.hs",
                 "QualifiedImport_QualifierResolves/Definition.hs"
-                );
+        );
         PsiFile usage = psiFiles[0];
         String textOfFile = usage.getText();
         int expectedStartOffset = textOfFile.indexOf("as Def") + 3;
@@ -368,7 +443,7 @@ public class HaskellGoToSymbolTest extends HaskellLightPlatformCodeInsightFixtur
         PsiFile[] psiFiles = myFixture.configureByFiles(
                 "QualifiedImport_QualifierResolvesMultipleCons_Cons1/Usage.hs",
                 "QualifiedImport_QualifierResolvesMultipleCons_Cons1/Definition.hs"
-                );
+        );
         PsiFile usage = psiFiles[0];
         String textOfFile = usage.getText();
         int expectedStartOffset = textOfFile.indexOf("as Def.Lef") + 3;
@@ -385,7 +460,7 @@ public class HaskellGoToSymbolTest extends HaskellLightPlatformCodeInsightFixtur
         PsiFile[] psiFiles = myFixture.configureByFiles(
                 "QualifiedImport_QualifierResolvesMultipleCons_Cons2/Usage.hs",
                 "QualifiedImport_QualifierResolvesMultipleCons_Cons2/Definition.hs"
-                );
+        );
         PsiFile usage = psiFiles[0];
         String textOfFile = usage.getText();
         int expectedStartOffset = textOfFile.indexOf("as Def.Lef") + 7;
@@ -402,7 +477,7 @@ public class HaskellGoToSymbolTest extends HaskellLightPlatformCodeInsightFixtur
         PsiFile[] psiFiles = myFixture.configureByFiles(
                 "QualifiedImport_QualifierResolvesMultipleCons_Cons1_NoAs/Usage.hs",
                 "QualifiedImport_QualifierResolvesMultipleCons_Cons1_NoAs/Definition.hs"
-                );
+        );
         PsiFile usage = psiFiles[0];
         String textOfFile = usage.getText();
         int expectedStartOffset = textOfFile.indexOf("qualified Definition.Definition") + 10;
@@ -419,7 +494,7 @@ public class HaskellGoToSymbolTest extends HaskellLightPlatformCodeInsightFixtur
         PsiFile[] psiFiles = myFixture.configureByFiles(
                 "QualifiedImport_QualifierResolvesMultipleCons_Cons2_NoAs/Usage.hs",
                 "QualifiedImport_QualifierResolvesMultipleCons_Cons2_NoAs/Definition.hs"
-                );
+        );
         PsiFile usage = psiFiles[0];
         String textOfFile = usage.getText();
         int expectedStartOffset = textOfFile.indexOf("qualified Definition.Definition") + 21;
@@ -437,7 +512,7 @@ public class HaskellGoToSymbolTest extends HaskellLightPlatformCodeInsightFixtur
                 "QualifiedImport_MultipleImportSameQualifiedName1/Usage/Usage.hs",
                 "QualifiedImport_MultipleImportSameQualifiedName1/Definition/Definition.hs",
                 "QualifiedImport_MultipleImportSameQualifiedName1/Other/Definition.hs"
-                );
+        );
         PsiFile usage = psiFiles[0];
         String textOfFile = usage.getText();
         int expectedStartOffset = textOfFile.indexOf("qualified Definition.Definition as Definition") + 35;
@@ -455,7 +530,7 @@ public class HaskellGoToSymbolTest extends HaskellLightPlatformCodeInsightFixtur
                 "QualifiedImport_MultipleImportSameQualifiedName2/Usage/Usage.hs",
                 "QualifiedImport_MultipleImportSameQualifiedName2/Definition/Definition.hs",
                 "QualifiedImport_MultipleImportSameQualifiedName2/Other/Definition.hs"
-                );
+        );
         PsiFile usage = psiFiles[0];
         String textOfFile = usage.getText();
         int expectedStartOffset = textOfFile.indexOf("qualified Other.Definition as Definition") + 30;

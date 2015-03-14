@@ -30,7 +30,7 @@ public class HaskellUtil {
         // Guess where the name could be defined by lookup up potential modules.
         final Set<String> potentialModules =
                 e == null ? Collections.EMPTY_SET
-                          : getPotentialDefinitionModuleNames(e, HaskellPsiUtil.parseImports(e.getContainingFile()));
+                        : getPotentialDefinitionModuleNames(e, HaskellPsiUtil.parseImports(e.getContainingFile()));
         List<PsiNamedElement> result = ContainerUtil.newArrayList();
         final String qPrefix = e == null ? null : getQualifiedPrefix(e);
         final PsiFile psiFile = e == null ? null : e.getContainingFile().getOriginalFile();
@@ -278,8 +278,8 @@ public class HaskellUtil {
     }
 
     private static @NotNull List<PsiElement> checkWhereClausesInScopeForVariableDeclaration(
-                @NotNull PsiElement myElement,
-                String matcher) {
+            @NotNull PsiElement myElement,
+            String matcher) {
         List<PsiElement>  results = Lists.newArrayList();
         PsiElement parent = myElement.getParent();
         do {
@@ -328,14 +328,28 @@ public class HaskellUtil {
         List<PsiElement> results = Lists.newArrayList();
         PsiElement parent = element;
         do {
-
+            /**
+             * This whole function needs to be re-evaluated, it's getting too much if,if,if. The logic
+             * is getting extremely unclear. There should be tests for all (identified) cases so the refactor
+             * should be feasible.
+             */
+            if (parent instanceof HaskellNewtypedecl){
+                HaskellNewtypedecl haskellNewtypedecl = (HaskellNewtypedecl) parent;
+                List<HaskellTyvar> tyvarList = haskellNewtypedecl.getTyvarList();
+                for (HaskellTyvar haskellTyvar : tyvarList) {
+                    HaskellVarid varId = haskellTyvar.getVarid();
+                    if (varId.getName().matches(matcher)){
+                        results.add(varId);
+                    }
+                }
+            }
             PsiElement prevSibling = parent.getPrevSibling();
             while (prevSibling != null) {
                 PsiElement possibleMatch = HaskellUtil.lookForFunOrPatDeclWithCorrectName(prevSibling, matcher);
                 if (possibleMatch != null) {
                     results.add(possibleMatch);
                 }
-                if (prevSibling instanceof HaskellPat) {
+                if (prevSibling instanceof HaskellPat && parent instanceof HaskellExp) {
                     List<HaskellVarid> varIds = HaskellUtil.extractAllHaskellVarids((HaskellPat) prevSibling);
                     for (HaskellVarid varId : varIds) {
                         if (varId.getName().matches(matcher)) {
@@ -359,18 +373,18 @@ public class HaskellUtil {
     }
 
 
-    public static List<PsiElementResolveResult> matchGlobalNamesUnqualified(
+    public static List<PsiElement> matchGlobalNamesUnqualified(
             PsiElement psiElement,
             List<PsiNamedElement> namedElements,
             List<HaskellPsiUtil.Import> importDeclarations){
 
         String ownModuleName = getModuleName(psiElement);
-        List<PsiElementResolveResult> results = Lists.newArrayList();
+        List<PsiElement> results = Lists.newArrayList();
         for (PsiNamedElement possibleReferences : namedElements) {
             String moduleNameOfPossibleReference = getModuleName(possibleReferences);
             if (importPresentAndUnqualifiedImport(moduleNameOfPossibleReference, importDeclarations) || ownModuleName.equals(moduleNameOfPossibleReference)) {
                 //noinspection ObjectAllocationInLoop
-                results.add(new PsiElementResolveResult(possibleReferences));
+                results.add(possibleReferences);
             }
         }
         return results;

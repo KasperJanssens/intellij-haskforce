@@ -66,7 +66,7 @@ public class HaskellTestCase extends TestCase {
         suite.addTestSuite(HaskellRenameTest.class);
         suite.addTestSuite(HaskellResolveTest.class);
         suite.addTestSuite(GhcUtilTest.class);
-        /**
+        suite.addTestSuite(HaskellGoToSymbolTest.class);
          * Keep commented out for now, don't seem to manage to 'mock' the ui interfacing part of this test (
          * it will ask for a selection in a list pop up)
          */

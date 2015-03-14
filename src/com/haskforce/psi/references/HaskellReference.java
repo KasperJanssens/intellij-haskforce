@@ -1,6 +1,7 @@
 package com.haskforce.psi.references;
 
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Sets;
 import com.haskforce.codeInsight.HaskellCompletionContributor;
 import com.haskforce.index.HaskellModuleIndex;
 import com.haskforce.psi.*;
@@ -20,10 +21,17 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 /**
- * Resolves references to elements.
+ * Resolves references to elements. Will be used in Go To Symbol as well as its inverse, Find Usages.
+ * Currently, the implementation of the multiresolve is very 'patchy', as it took quite a few tries to get
+ * most (hopefully all) cases covered. The class has been developed totally test first, so refactoring  to a better
+ * structured implementation should be feasible.
+ * It draws heavily on functions that are implemented in the HaskellUtil class. Those functions are not
+ * tested in the HaskellUtil class but are also tested through the HaskellGoToSymbolTest class (as is this class)
  */
 public class HaskellReference extends PsiReferenceBase<PsiNamedElement> implements PsiPolyVariantReference {
     private String name;
@@ -46,6 +54,9 @@ public class HaskellReference extends PsiReferenceBase<PsiNamedElement> implemen
         if (!(myElement instanceof HaskellVarid || myElement instanceof HaskellConid)) {
             return EMPTY_RESOLVE_RESULT;
         }
+
+        Project project = myElement.getProject();
+        final List<PsiNamedElement> namedElements = HaskellUtil.findDefinitionNode(project, name, myElement);
         // Make sure that we only complete the last conid in a qualified expression.
         if (myElement instanceof HaskellConid) {
             // Don't resolve a module import to a constructor.
@@ -95,6 +106,17 @@ public class HaskellReference extends PsiReferenceBase<PsiNamedElement> implemen
 
                     }
 
+                } else {
+                    if (myElement.getParent() instanceof HaskellTycon){
+                        List<ResolveResult> results = new ArrayList<ResolveResult>(20);
+                        for (PsiNamedElement namedElement : namedElements){
+                            if (namedElement.getParent() instanceof HaskellTycon){
+                                results.add(new PsiElementResolveResult(namedElement));
+                            }
+                        }
+                        return results.toArray(new ResolveResult[results.size()]);
+                    }
+                    return EMPTY_RESOLVE_RESULT;
                 }
             }
 
@@ -107,8 +129,6 @@ public class HaskellReference extends PsiReferenceBase<PsiNamedElement> implemen
             return EMPTY_RESOLVE_RESULT;
         }
 
-
-        Project project = myElement.getProject();
 
         HaskellImpdecl haskellImpdecl = PsiTreeUtil.getParentOfType(myElement, HaskellImpdecl.class);
         if (haskellImpdecl != null){
@@ -149,11 +169,17 @@ public class HaskellReference extends PsiReferenceBase<PsiNamedElement> implemen
         String qualifiedCallName = HaskellUtil.getQualifiedPrefix(myElement);
 
         if (qualifiedCallName == null){
-            results.addAll(HaskellUtil.matchGlobalNamesUnqualified(myElement,namedElements,imports));
+            /**
+             * This is a set because sometimes there seems to be overlap between findDefintionNode which
+             * should return all 'left-most' variables and the local variables. Also called
+             *  a stop gap.
+             */
+            Set<PsiElement> resultSet = Sets.newHashSet();
+            resultSet.addAll(HaskellUtil.matchGlobalNamesUnqualified(myElement,namedElements,imports));
 
             List<PsiElement> localVariables = HaskellUtil.matchLocalDefinitionsInScope(myElement, name);
             for (PsiElement psiElement : localVariables) {
-                results.add(new PsiElementResolveResult(psiElement));
+                resultSet.add(psiElement);
             }
 
             /**
@@ -162,12 +188,18 @@ public class HaskellReference extends PsiReferenceBase<PsiNamedElement> implemen
              */
             List<PsiElement> localWhereDefinitions = HaskellUtil.matchWhereClausesInScope(myElement, name);
             for (PsiElement element : localWhereDefinitions) {
-                results.add(new PsiElementResolveResult(element));
+                resultSet.add(element);
             }
+            Iterator<PsiElement> iterator = resultSet.iterator();
+            while(iterator.hasNext()){
+                results.add(new PsiElementResolveResult(iterator.next()));
+            }
+            return results.toArray(new ResolveResult[results.size()]);
+
         } else {
             results.addAll(HaskellUtil.matchGlobalNamesQualified(namedElements, qualifiedCallName, imports));
+            return results.toArray(new ResolveResult[results.size()]);
         }
-        return results.toArray(new ResolveResult[results.size()]);
     }
 
     private @NotNull List<PsiElementResolveResult> handleImportReferences(@NotNull HaskellImpdecl haskellImpdecl,
@@ -184,11 +216,6 @@ public class HaskellReference extends PsiReferenceBase<PsiNamedElement> implemen
             GlobalSearchScope globalSearchScope = GlobalSearchScope.projectScope(myElement.getProject());
             List<HaskellFile> filesByModuleName = HaskellModuleIndex.getFilesByModuleName(myElement.getProject(), moduleName, globalSearchScope);
             for (HaskellFile haskellFile : filesByModuleName) {
-                /**
-                 * TODO Kasper: shouldn't this better be getChildOfType? Don't do anything with the list, and indeed I
-                 * don't
-                 * think it's even possible to have multiple modules declarations in one file in Haskell
-                 */
                 HaskellModuledecl[] moduleDecls = PsiTreeUtil.getChildrenOfType(haskellFile, HaskellModuledecl.class);
                 if (moduleDecls.length != 0){
                     List<HaskellConid> conidList = moduleDecls[0].getQconid().getConidList();
