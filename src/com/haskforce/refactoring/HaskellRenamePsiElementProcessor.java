@@ -5,14 +5,23 @@ import com.intellij.openapi.editor.Editor;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.refactoring.rename.RenamePsiElementProcessor;
-import com.intellij.testFramework.PsiTestUtil;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.Nullable;
 
-import java.io.File;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * The rename processor plays a role in renaming files when you rename the module or vice versa.
+ * The key is that it's necessary to define a direction of the rename. This means that you OR rename the module
+ * when a file rename is detected OR rename the file when a module rename is detected.
+ *
+ * We have chosen to make the rename of a file trigger the rename of a module.
+ *
+ * To make sure that we can also go the other way round, so renaming the file when you rename the module, the function
+ * substituteElementToRename exists. This will intercept any renames to the module and launch a file rename instead.
+ * Which will in turn rename the module (as we defined the direction fo the rename like that).
+ */
 public class HaskellRenamePsiElementProcessor extends RenamePsiElementProcessor {
 
     @Nullable
