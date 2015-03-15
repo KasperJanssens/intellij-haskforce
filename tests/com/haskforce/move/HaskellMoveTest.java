@@ -14,7 +14,7 @@ public class HaskellMoveTest extends HaskellLightPlatformCodeInsightFixtureTestC
         super("move", "move");
     }
 
-    public void ignoredTestMove(){
+    public void testMove(){
         PsiFile[] files = myFixture.configureByFiles("From/MoveMe.hs", "To/Token.hs");
         myFixture.moveFile("From/MoveMe.hs", "To/");
         HaskellFile moveMe = (HaskellFile)files[0];
