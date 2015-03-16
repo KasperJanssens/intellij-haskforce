@@ -34,6 +34,11 @@ public class HaskellReference extends PsiReferenceBase<PsiNamedElement> implemen
         name = element.getName();
     }
 
+    @Override
+    public PsiElement bindToElement(@NotNull PsiElement element) throws IncorrectOperationException {
+        return element;
+    }
+
     public static final ResolveResult[] EMPTY_RESOLVE_RESULT = new ResolveResult[0];
 
     /**

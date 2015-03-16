@@ -21,11 +21,10 @@ public class HaskellMoveTest extends HaskellLightPlatformCodeInsightFixtureTestC
         HaskellFile token = (HaskellFile)files[1];
         assertEquals("To", moveMe.getContainingDirectory().getName());
         assertEquals("To.MoveMe", moveMe.getModuleName());
+
         List<HaskellImpdecl> impdeclList = token.getBody().getImpdeclList();
         assertEquals(impdeclList.size(),1);
-        HaskellImpdecl haskellImpdecl = impdeclList.get(0);
-        List<HaskellConid> conidList = haskellImpdecl.getQconidList().get(0).getConidList();
-        assertEquals(conidList.get(0).getName(),"To");
-        assertEquals(conidList.get(1).getName(),"MoveMe");
+
+        myFixture.checkResultByFile("To/Token.hs", "To/Token-after.hs", false);
     }
 }
