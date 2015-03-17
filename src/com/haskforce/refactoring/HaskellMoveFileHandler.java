@@ -6,7 +6,9 @@ import com.haskforce.psi.HaskellFile;
 import com.haskforce.psi.HaskellModuledecl;
 import com.haskforce.psi.HaskellPsiUtil;
 import com.haskforce.psi.impl.HaskellElementFactory;
+import com.haskforce.utils.FileUtil;
 import com.intellij.openapi.components.ServiceManager;
+import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ProjectRootManager;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.*;
@@ -44,31 +46,31 @@ public class HaskellMoveFileHandler extends MoveFileHandler {
      */
     public void prepareMovedFile(PsiFile psiFile, PsiDirectory psiDirectory, Map<PsiElement, PsiElement> map) {
         this.psiDirectory = psiDirectory;
+        Project project = psiFile.getProject();
         // 2 of 4
         HaskellModuledecl haskellModuledecl = PsiTreeUtil.getChildOfType(psiFile, HaskellModuledecl.class);
-        String presentableText = psiDirectory.getPresentation().getPresentableText();
-        String[] subDirs = presentableText.split("/");
+        List<String> subDirs = FileUtil.getPathFromSourceRoot(project, psiDirectory.getVirtualFile());
         List<HaskellConid> conidList = haskellModuledecl.getQconid().getConidList();
         /**
          * For all changed constructors need to create a new psi element that's a conid. Somewhere in HaskellPsiUtil?
          */
-        if (subDirs.length == conidList.size()-1) {
-            for (int i = 0; i < subDirs.length; i++) {
-                String currentSubDir = subDirs[i];
+        if (subDirs.size() == conidList.size()-1) {
+            for (int i = 0; i < subDirs.size(); i++) {
+                String currentSubDir = subDirs.get(i);
                 HaskellConid oldConId = conidList.get(i);
                 if (!currentSubDir.equals(oldConId.getName())) {
-                    HaskellConid newConId = HaskellElementFactory.createConidFromText(psiFile.getProject(), currentSubDir);
+                    HaskellConid newConId = HaskellElementFactory.createConidFromText(project, currentSubDir);
                     map.put(oldConId, oldConId.replace(newConId));
                 }
             }
         }
-        if (subDirs.length < conidList.size()-1){
+        if (subDirs.size() < conidList.size()-1){
             int i = 0;
-            for (; i < subDirs.length; i++) {
-                String currentSubDir = subDirs[i];
+            for (; i < subDirs.size(); i++) {
+                String currentSubDir = subDirs.get(i);
                 HaskellConid oldConId = conidList.get(i);
                 if (!currentSubDir.equals(oldConId.getName())) {
-                    HaskellConid newConId = HaskellElementFactory.createConidFromText(psiFile.getProject(), currentSubDir);
+                    HaskellConid newConId = HaskellElementFactory.createConidFromText(project, currentSubDir);
                     map.put(oldConId, oldConId.replace(newConId));
                 } else {
                     map.put(oldConId, oldConId);
@@ -81,6 +83,29 @@ public class HaskellMoveFileHandler extends MoveFileHandler {
                 dot.delete();
                 haskellConid.delete();
             }
+        }
+
+        if (subDirs.size() > conidList.size()-1){
+            int i = 0;
+            for (; i < conidList.size(); i++) {
+                String currentSubDir = subDirs.get(i);
+                HaskellConid oldConId = conidList.get(i);
+                if (!currentSubDir.equals(oldConId.getName())) {
+                    HaskellConid newConId = HaskellElementFactory.createConidFromText(project, currentSubDir);
+                    map.put(oldConId, oldConId.replace(newConId));
+                } else {
+                    map.put(oldConId, oldConId);
+                }
+            }
+            HaskellConid lastCon = conidList.get(i-1);
+            for (; i < subDirs.size(); i++){
+                String currentSubDir = subDirs.get(i);
+                HaskellConid newConId = HaskellElementFactory.createConidFromText(project, currentSubDir);
+                lastCon.addAfter(newConId, lastCon);
+                lastCon = newConId;
+            }
+            HaskellConid moduleName = conidList.get(conidList.size() - 1);
+//            lastCon.addAfter(moduleName,lastCon);
         }
     }
 

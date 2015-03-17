@@ -30,7 +30,6 @@ import com.haskforce.features.HaskellFoldingBuilderTest;
 import com.haskforce.features.HaskellTypedHandlerTest;
 import com.haskforce.highlighting.HaskellLexerTest;
 import com.haskforce.highlighting.annotation.external.GhcUtilTest;
-import com.haskforce.move.HaskellMoveTest;
 import com.haskforce.parser.HaskellParserTest;
 import com.haskforce.parser.HaskellParsingLexerTest;
 import com.haskforce.refactoring.HaskellRenameTest;
