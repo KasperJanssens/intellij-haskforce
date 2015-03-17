@@ -36,6 +36,13 @@ public class HaskellReference extends PsiReferenceBase<PsiNamedElement> implemen
 
     @Override
     public PsiElement bindToElement(@NotNull PsiElement element) throws IncorrectOperationException {
+        /**
+         * Not sure this is totally canonical. I didn't find an indicator how to implement this method correctly,
+         * not even in the java or groovy plugins. Couldn't find my way to the correct reference maybe, but all
+         * implementations I saw up until now did not perform this replace, just returned the element that it passed in.
+         * They implemented an 'id' function so to speak.
+         */
+        this.myElement.replace(element);
         return element;
     }
 

@@ -61,7 +61,7 @@ public class HaskellMoveFileHandler extends MoveFileHandler {
             HaskellConid oldConId = conidList.get(i);
             if (!currentSubDir.equals(oldConId.getName())){
                 HaskellConid newConId = HaskellElementFactory.createConidFromText(psiFile.getProject(), currentSubDir);
-                map.put(oldConId,newConId);
+                map.put(oldConId,oldConId.replace(newConId));
             }
 
         }
@@ -96,7 +96,6 @@ public class HaskellMoveFileHandler extends MoveFileHandler {
                 UsageInfo usageInfo = new MoveRenameUsageInfo(psiReference, haskellConid);
                 usageInfos.add(usageInfo);
             }
-
         }
         return usageInfos;
     }
@@ -109,16 +108,14 @@ public class HaskellMoveFileHandler extends MoveFileHandler {
          **/
         for (UsageInfo usageInfo : list) {
             if (usageInfo instanceof MoveRenameUsageInfo){
-                PsiElement oldElement = ((MoveRenameUsageInfo) usageInfo).getReferencedElement();
+                MoveRenameUsageInfo moveRenameUsageInfo = (MoveRenameUsageInfo) usageInfo;
+                PsiElement oldElement = moveRenameUsageInfo.getReferencedElement();
                 PsiElement newElement = oldToNewMap.get(oldElement);
-                PsiReference reference = ((MoveRenameUsageInfo) usageInfo).getReference();
+                PsiReference reference = moveRenameUsageInfo.getReference();
                 if (reference != null){
                     reference.bindToElement(newElement);
                 }
-//                PsiElement psiElement = ((MoveRenameUsageInfo) usageInfo).getReference().bindToElement(newElement);
-//                System.out.println("koekoek");
             }
-
         }
     }
 
@@ -129,20 +126,20 @@ public class HaskellMoveFileHandler extends MoveFileHandler {
          * This renames the module itself, as the file itself will not be renamed by target usages.
          * How does this connect with the rename file thingy, that isn't triggered or so?
          */
-        String[] subDirs = psiDirectory.getPresentation().getPresentableText().split("/");
+        /*String[] subDirs = psiDirectory.getPresentation().getPresentableText().split("/");
         HaskellFile haskellFile = (HaskellFile) psiFile;
         HaskellModuledecl haskellModuledecl = PsiTreeUtil.findChildOfType(haskellFile, HaskellModuledecl.class);
 
-        List<HaskellConid> conidList = haskellModuledecl.getQconid().getConidList();
+        List<HaskellConid> conidList = haskellModuledecl.getQconid().getConidList();*/
         /**
          * Feels very duplication here. Not right I guess.
          */
-        for (int i = 0; i < subDirs.length; i++) {
+        /*for (int i = 0; i < subDirs.length; i++) {
             String currentSubDir = subDirs[i];
             HaskellConid currentConId = conidList.get(i);
             if (!currentSubDir.equals(currentConId.getName())){
                 currentConId.setName(currentSubDir);
             }
-        }
+        }*/
     }
 }
