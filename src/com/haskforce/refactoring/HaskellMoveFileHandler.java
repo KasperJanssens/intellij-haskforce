@@ -63,9 +63,7 @@ public class HaskellMoveFileHandler extends MoveFileHandler {
                 HaskellConid newConId = HaskellElementFactory.createConidFromText(psiFile.getProject(), currentSubDir);
                 map.put(oldConId,oldConId.replace(newConId));
             }
-
         }
-
     }
 
     @Nullable
@@ -78,10 +76,6 @@ public class HaskellMoveFileHandler extends MoveFileHandler {
          * KIVVVSS : hierarchy of one directory deep for now. Only move from one directory deep to one directory deep.
          * Feeling my way around here.
          */
-
-        PsiReferenceProvider referenceProvider = ServiceManager.getService(PsiReferenceProvider.class);
-
-
 
         HaskellModuledecl haskellModuledecl = PsiTreeUtil.getChildOfType(psiFile, HaskellModuledecl.class);
         List<HaskellConid> conidList = haskellModuledecl.getQconid().getConidList();
