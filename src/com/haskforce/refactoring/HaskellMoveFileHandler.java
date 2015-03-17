@@ -63,6 +63,8 @@ public class HaskellMoveFileHandler extends MoveFileHandler {
                     map.put(oldConId, oldConId.replace(newConId));
                 }
             }
+            HaskellConid moduleName = conidList.get(conidList.size() - 1);
+            map.put(moduleName, moduleName);
         }
         if (subDirs.size() < conidList.size()-1){
             int i = 0;
@@ -83,11 +85,13 @@ public class HaskellMoveFileHandler extends MoveFileHandler {
                 dot.delete();
                 haskellConid.delete();
             }
+            HaskellConid moduleName = conidList.get(conidList.size() - 1);
+            map.put(moduleName, moduleName);
         }
 
         if (subDirs.size() > conidList.size()-1){
             int i = 0;
-            for (; i < conidList.size(); i++) {
+            for (; i < conidList.size()-1; i++) {
                 String currentSubDir = subDirs.get(i);
                 HaskellConid oldConId = conidList.get(i);
                 if (!currentSubDir.equals(oldConId.getName())) {
@@ -97,15 +101,31 @@ public class HaskellMoveFileHandler extends MoveFileHandler {
                     map.put(oldConId, oldConId);
                 }
             }
-            HaskellConid lastCon = conidList.get(i-1);
-            for (; i < subDirs.size(); i++){
-                String currentSubDir = subDirs.get(i);
-                HaskellConid newConId = HaskellElementFactory.createConidFromText(project, currentSubDir);
-                lastCon.addAfter(newConId, lastCon);
-                lastCon = newConId;
+            HaskellConid moduleName = conidList.get(conidList.size()-1);
+            PsiElement dot = moduleName.getPrevSibling();
+            String currentSubDir = subDirs.get(i);
+            HaskellConid newModuleElement = HaskellElementFactory.createConidFromText(project, currentSubDir);
+            ++i;
+            for (; i< subDirs.size();i++){
+                HaskellConid newConId = HaskellElementFactory.createConidFromText(project, subDirs.get(i));
+                newModuleElement.addAfter(dot.copy(),null);
+                newModuleElement.addAfter(newConId,null);
             }
-            HaskellConid moduleName = conidList.get(conidList.size() - 1);
-//            lastCon.addAfter(moduleName,lastCon);
+            newModuleElement.addAfter(dot.copy(),null);
+            newModuleElement.addAfter(moduleName,null);
+            map.put(moduleName,moduleName.replace(newModuleElement));
+
+//            HaskellConid lastCon = conidList.get(i - 1);
+//            PsiElement dot = lastCon.getNextSibling();
+//            PsiElement parent = lastCon.getParent();
+//            for (; i < subDirs.size(); i++){
+//                String currentSubDir = subDirs.get(i);
+//                HaskellConid newConId = HaskellElementFactory.createConidFromText(project, currentSubDir);
+//                PsiElement newDot = dot.copy();
+//                parent.addAfter(newConId,lastCon);
+//                parent.addAfter(newDot,lastCon);
+//                lastCon = newConId;
+//            }
         }
     }
 
@@ -123,10 +143,6 @@ public class HaskellMoveFileHandler extends MoveFileHandler {
         HaskellModuledecl haskellModuledecl = PsiTreeUtil.getChildOfType(psiFile, HaskellModuledecl.class);
         List<HaskellConid> conidList = haskellModuledecl.getQconid().getConidList();
         List<UsageInfo> usageInfos = Lists.newArrayList();
-        /**
-         * Remove the module name itself.
-         */
-        conidList.remove(conidList.size()-1);
         for (HaskellConid haskellConid : conidList) {
             Collection<PsiReference> psiReferences = ReferencesSearch.search(haskellConid).findAll();
             for (PsiReference psiReference : psiReferences) {
