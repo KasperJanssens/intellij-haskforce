@@ -14,17 +14,11 @@ public class HaskellMoveTest extends HaskellLightPlatformCodeInsightFixtureTestC
         super("move", "move");
     }
 
-    public void testMove(){
-        PsiFile[] files = myFixture.configureByFiles("From/MoveMe.hs", "To/Token.hs");
-        myFixture.moveFile("From/MoveMe.hs", "To/");
-        HaskellFile moveMe = (HaskellFile)files[0];
-        HaskellFile token = (HaskellFile)files[1];
-        assertEquals("To", moveMe.getContainingDirectory().getName());
-        assertEquals("To.MoveMe", moveMe.getModuleName());
+    public void testSimpleMove(){
+        PsiFile[] files = myFixture.configureByFiles("SimpleMove/From/MoveMe.hs", "SimpleMove/To/Token.hs");
+        myFixture.moveFile("SimpleMove/From/MoveMe.hs", "SimpleMove/To/");
 
-        List<HaskellImpdecl> impdeclList = token.getBody().getImpdeclList();
-        assertEquals(impdeclList.size(),1);
-
-        myFixture.checkResultByFile("To/Token.hs", "To/Token-after.hs", false);
+        myFixture.checkResultByFile("SimpleMove/To/Token.hs", "SimpleMove/To/Token-after.hs", false);
+        myFixture.checkResultByFile("SimpleMove/To/MoveMe.hs", "SimpleMove/From/MoveMe-after.hs", false);
     }
 }

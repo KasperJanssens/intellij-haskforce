@@ -41,6 +41,7 @@ public class HaskellReference extends PsiReferenceBase<PsiNamedElement> implemen
          * not even in the java or groovy plugins. Couldn't find my way to the correct reference maybe, but all
          * implementations I saw up until now did not perform this replace, just returned the element that it passed in.
          * They implemented an 'id' function so to speak.
+         * I'm a bit afraid that this is going to trigger a rename for every element.
          */
         this.myElement.replace(element);
         return element;

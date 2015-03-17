@@ -123,23 +123,8 @@ public class HaskellMoveFileHandler extends MoveFileHandler {
     public void updateMovedFile(PsiFile psiFile) throws IncorrectOperationException {
         // 3 of 4
         /**
-         * This renames the module itself, as the file itself will not be renamed by target usages.
-         * How does this connect with the rename file thingy, that isn't triggered or so?
+         This is for 'post move' actions. The file's current directory should already be updated and so. Nothing more to
+         do here for the haskell side of things.
          */
-        /*String[] subDirs = psiDirectory.getPresentation().getPresentableText().split("/");
-        HaskellFile haskellFile = (HaskellFile) psiFile;
-        HaskellModuledecl haskellModuledecl = PsiTreeUtil.findChildOfType(haskellFile, HaskellModuledecl.class);
-
-        List<HaskellConid> conidList = haskellModuledecl.getQconid().getConidList();*/
-        /**
-         * Feels very duplication here. Not right I guess.
-         */
-        /*for (int i = 0; i < subDirs.length; i++) {
-            String currentSubDir = subDirs[i];
-            HaskellConid currentConId = conidList.get(i);
-            if (!currentSubDir.equals(currentConId.getName())){
-                currentConId.setName(currentSubDir);
-            }
-        }*/
     }
 }
