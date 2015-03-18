@@ -87,30 +87,32 @@ public class HaskellMoveFileHandler extends MoveFileHandler {
         }
 
         if (subDirs.size() > conidList.size()-1){
+            /**
+             * Hacky : we remove all the constructors and will at the end replace
+             * the original module name with a complete chain of constructors.
+             */
             int i = 0;
             for (; i < conidList.size()-1; i++) {
-                String currentSubDir = subDirs.get(i);
                 HaskellConid oldConId = conidList.get(i);
-                if (!currentSubDir.equals(oldConId.getName())) {
-                    HaskellConid newConId = HaskellElementFactory.createConidFromText(project, currentSubDir);
-//                    map.put(oldConId, oldConId.replace(newConId));
-                    map.put(oldConId, null);
-                } else {
-//                    map.put(oldConId, oldConId);
-                    map.put(oldConId, null);
-                }
+                map.put(oldConId, null);
             }
 
+            /**
+             * Here we'll make the list of constructors.
+             */
             HaskellConid originalModuleName = conidList.get(conidList.size() - 1);
             PsiElement originalModuleNameParent = originalModuleName.getParent();
-            PsiElement dot = originalModuleName.getPrevSibling();
-            HaskellConid lastAddedNewConId = null;
             for (; i< subDirs.size();i++){
                 HaskellConid newConId = HaskellElementFactory.createConidFromText(project, subDirs.get(i));
                 originalModuleNameParent.addBefore(newConId, originalModuleName);
-                originalModuleNameParent.addBefore(dot.copy(), originalModuleName);
-                lastAddedNewConId = newConId;
+                originalModuleNameParent.addBefore(HaskellElementFactory.createDot(project), originalModuleName);
             }
+            /**
+             * and indeed, we replace the module name with it's parent.
+             * We could avoid this hack most likely if we extended the HaskellReference
+             * to link the module declarations together. So instead of resolving the sub elements
+             * of A.B.ModuleName (A, B and ModuleName) we resolve the combo.
+             */
             map.put(originalModuleName,originalModuleName.getParent());
         }
     }
@@ -150,10 +152,6 @@ public class HaskellMoveFileHandler extends MoveFileHandler {
                 MoveRenameUsageInfo moveRenameUsageInfo = (MoveRenameUsageInfo) usageInfo;
                 PsiElement oldElement = moveRenameUsageInfo.getReferencedElement();
                 PsiElement newElement = oldToNewMap.get(oldElement);
-//                if (newElement instanceof HaskellQconid){
-//                    oldElement.getParent().replace(newElement);
-//                    continue;
-//                }
                 PsiReference reference = moveRenameUsageInfo.getReference();
                 if (reference != null){
                     if (newElement != null) {

@@ -20,4 +20,19 @@ public class HaskellMoveDirectoryUpTest extends HaskellLightPlatformCodeInsightF
         myFixture.checkResultByFile("Over/Here/ReferMoveMe.hs",
                 "Over/Here/ReferMoveMe-after.hs", false);
     }
+
+    public void testMoveUpFromTooDirectory(){
+        PsiFile[] files = myFixture.configureByFiles("MoveMe.hs",
+                "ReferRootMoveMe.hs", "Over/Here/ReferMoveMe.hs");
+
+        myFixture.moveFile("MoveMe.hs", "Over/Here/");
+
+        myFixture.checkResultByFile("Over/Here/MoveMe.hs",
+                "Over/Here/MoveMe-after.hs", false);
+        myFixture.checkResultByFile("ReferRootMoveMe.hs",
+                "ReferRootMoveMe-after.hs", false);
+
+        myFixture.checkResultByFile("Over/Here/ReferMoveMe.hs",
+                "Over/Here/ReferMoveMe.hs", false);
+    }
 }
