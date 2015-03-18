@@ -13,8 +13,6 @@ import com.intellij.psi.*;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.IncorrectOperationException;
-import com.intellij.util.indexing.FileBasedIndex;
-import com.intellij.util.indexing.ID;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -33,6 +31,19 @@ public class HaskellReference extends PsiReferenceBase<PsiNamedElement> implemen
         name = element.getName();
     }
 
+    @Override
+    public PsiElement bindToElement(@NotNull PsiElement element) throws IncorrectOperationException {
+        /**
+         * Not sure this is totally canonical. I didn't find an indicator how to implement this method correctly,
+         * not even in the java or groovy plugins. Couldn't find my way to the correct reference maybe, but all
+         * implementations I saw up until now did not perform this replace, just returned the element that it passed in.
+         * They implemented an 'id' function so to speak.
+         * I'm a bit afraid that this is going to trigger a rename for every element.
+         */
+        this.myElement.replace(element);
+        return element;
+    }
+
     public static final ResolveResult[] EMPTY_RESOLVE_RESULT = new ResolveResult[0];
 
     /**
@@ -46,6 +57,9 @@ public class HaskellReference extends PsiReferenceBase<PsiNamedElement> implemen
         if (!(myElement instanceof HaskellVarid || myElement instanceof HaskellConid)) {
             return EMPTY_RESOLVE_RESULT;
         }
+
+        Project project = myElement.getProject();
+        final List<PsiNamedElement> namedElements = HaskellUtil.findDefinitionNode(project, name, myElement);
         // Make sure that we only complete the last conid in a qualified expression.
         if (myElement instanceof HaskellConid) {
             // Don't resolve a module import to a constructor.
@@ -95,6 +109,17 @@ public class HaskellReference extends PsiReferenceBase<PsiNamedElement> implemen
 
                     }
 
+                } else {
+                    if (myElement.getParent() instanceof HaskellTycon){
+                        List<ResolveResult> results = new ArrayList<ResolveResult>(20);
+                        for (PsiNamedElement namedElement : namedElements){
+                            if (namedElement.getParent() instanceof HaskellTycon){
+                                results.add(new PsiElementResolveResult(namedElement));
+                            }
+                        }
+                        return results.toArray(new ResolveResult[results.size()]);
+                    }
+                    return EMPTY_RESOLVE_RESULT;
                 }
             }
 
@@ -107,8 +132,6 @@ public class HaskellReference extends PsiReferenceBase<PsiNamedElement> implemen
             return EMPTY_RESOLVE_RESULT;
         }
 
-
-        Project project = myElement.getProject();
 
         HaskellImpdecl haskellImpdecl = PsiTreeUtil.getParentOfType(myElement, HaskellImpdecl.class);
         if (haskellImpdecl != null){
@@ -142,18 +165,24 @@ public class HaskellReference extends PsiReferenceBase<PsiNamedElement> implemen
 //        Collection<HaskellNamedElement> namedElements = StubIndex.getElements(HaskellAllNameIndex.KEY, name, project, scope, HaskellNamedElement.class);
 
         // Guess 20 variants tops most of the time in any real code base.
-        final List<PsiNamedElement> namedElements = HaskellUtil.findDefinitionNode(project, name, myElement);
+
         List<ResolveResult> results = new ArrayList<ResolveResult>(20);
         List<HaskellPsiUtil.Import> imports = HaskellPsiUtil.parseImports(myElement.getContainingFile());
 
         String qualifiedCallName = HaskellUtil.getQualifiedPrefix(myElement);
 
         if (qualifiedCallName == null){
-            results.addAll(HaskellUtil.matchGlobalNamesUnqualified(myElement,namedElements,imports));
+            /**
+             * This is a set because sometimes there seems to be overlap between findDefintionNode which
+             * should return all 'left-most' variables and the local variables. Also called
+             *  a stop gap.
+             */
+            Set<PsiElement> resultSet = Sets.newHashSet();
+            resultSet.addAll(HaskellUtil.matchGlobalNamesUnqualified(myElement,namedElements,imports));
 
             List<PsiElement> localVariables = HaskellUtil.matchLocalDefinitionsInScope(myElement, name);
             for (PsiElement psiElement : localVariables) {
-                results.add(new PsiElementResolveResult(psiElement));
+                resultSet.add(psiElement);
             }
 
             /**
@@ -162,12 +191,18 @@ public class HaskellReference extends PsiReferenceBase<PsiNamedElement> implemen
              */
             List<PsiElement> localWhereDefinitions = HaskellUtil.matchWhereClausesInScope(myElement, name);
             for (PsiElement element : localWhereDefinitions) {
-                results.add(new PsiElementResolveResult(element));
+                resultSet.add(element);
             }
+            Iterator<PsiElement> iterator = resultSet.iterator();
+            while(iterator.hasNext()){
+                results.add(new PsiElementResolveResult(iterator.next()));
+            }
+            return results.toArray(new ResolveResult[results.size()]);
+
         } else {
             results.addAll(HaskellUtil.matchGlobalNamesQualified(namedElements, qualifiedCallName, imports));
+            return results.toArray(new ResolveResult[results.size()]);
         }
-        return results.toArray(new ResolveResult[results.size()]);
     }
 
     private @NotNull List<PsiElementResolveResult> handleImportReferences(@NotNull HaskellImpdecl haskellImpdecl,

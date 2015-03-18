@@ -1,6 +1,7 @@
 package com.haskforce.cabal.highlighting;
 
 import com.haskforce.cabal.psi.CabalTypes;
+import com.intellij.execution.testframework.sm.SMTestRunnerConnectionUtil;
 import com.intellij.lang.annotation.AnnotationHolder;
 import com.intellij.lang.annotation.Annotator;
 import com.intellij.openapi.editor.colors.EditorColorsManager;

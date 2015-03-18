@@ -32,8 +32,10 @@ import com.haskforce.features.intentions.AddBuildDependsTest;
 import com.haskforce.highlighting.HaskellLexerTest;
 import com.haskforce.highlighting.annotation.external.GhcUtilTest;
 import com.haskforce.highlighting.annotation.external.ProblemTest;
-import com.haskforce.move.HaskellMoveTest;
+import com.haskforce.move.HaskellMoveDirectoryUpTest;
 import com.haskforce.parser.CabalParserTest;
+import com.haskforce.move.HaskellSimpleMoveMoreReferencesTest;
+import com.haskforce.move.HaskellSimpleMoveTest;
 import com.haskforce.parser.HaskellParserTest;
 import com.haskforce.parser.HaskellParsingLexerTest;
 import com.haskforce.refactoring.HaskellRenameTest;
@@ -64,6 +66,10 @@ public class HaskellTestCase extends TestCase {
         suite.addTestSuite(HaskellGoToSymbolTest.class);
         suite.addTestSuite(HaskellFindUsagesTest.class);
         suite.addTestSuite(HaskellRenameTest.class);
+        suite.addTestSuite(HaskellMoveDirectoryDownTest.class);
+        suite.addTestSuite(HaskellMoveDirectoryUpTest.class);
+        suite.addTestSuite(HaskellSimpleMoveMoreReferencesTest.class);
+        suite.addTestSuite(HaskellSimpleMoveTest.class);
         suite.addTestSuite(HaskellResolveTest.class);
         suite.addTestSuite(GhcUtilTest.class);
         /**
