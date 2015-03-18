@@ -10,14 +10,18 @@ public class HaskellSimpleMoveMoreReferencesTest extends HaskellLightPlatformCod
     }
     
     public void testSimpleMoveMoreReferences(){
-        PsiFile[] files = myFixture.configureByFiles("From/MoveMe.hs",
+        PsiFile[] files = myFixture.configureByFiles(
+                "From/MoveMe.hs",
                 "To/Token.hs",
-                "From/ReferMoveToo.hs");
+                "From/ReferMoveToo.hs",
+                "SimpleMoveMoreReferences.cabal");
+
         myFixture.moveFile("From/MoveMe.hs", "To/");
 
         myFixture.checkResultByFile("To/Token.hs", "To/Token-after.hs", false);
         myFixture.checkResultByFile("To/MoveMe.hs", "From/MoveMe-after.hs", false);
         myFixture.checkResultByFile("From/ReferMoveToo.hs", "From/ReferMoveToo-after.hs", false);
-    }   
+        myFixture.checkResultByFile("SimpleMoveMoreReferences.cabal", "SimpleMoveMoreReferences-after.cabal", false);
+    }
 
 }

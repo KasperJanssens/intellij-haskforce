@@ -32,6 +32,7 @@ import com.haskforce.features.intentions.AddBuildDependsTest;
 import com.haskforce.highlighting.HaskellLexerTest;
 import com.haskforce.highlighting.annotation.external.GhcUtilTest;
 import com.haskforce.highlighting.annotation.external.ProblemTest;
+import com.haskforce.move.HaskellMoveDirectoryDownTest;
 import com.haskforce.move.HaskellMoveDirectoryUpTest;
 import com.haskforce.parser.CabalParserTest;
 import com.haskforce.move.HaskellSimpleMoveMoreReferencesTest;
