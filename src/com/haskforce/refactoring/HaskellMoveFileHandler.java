@@ -1,10 +1,7 @@
 package com.haskforce.refactoring;
 
 import com.google.common.collect.Lists;
-import com.haskforce.psi.HaskellConid;
-import com.haskforce.psi.HaskellFile;
-import com.haskforce.psi.HaskellModuledecl;
-import com.haskforce.psi.HaskellPsiUtil;
+import com.haskforce.psi.*;
 import com.haskforce.psi.impl.HaskellElementFactory;
 import com.haskforce.utils.FileUtil;
 import com.intellij.openapi.components.ServiceManager;
@@ -96,23 +93,25 @@ public class HaskellMoveFileHandler extends MoveFileHandler {
                 HaskellConid oldConId = conidList.get(i);
                 if (!currentSubDir.equals(oldConId.getName())) {
                     HaskellConid newConId = HaskellElementFactory.createConidFromText(project, currentSubDir);
-                    map.put(oldConId, oldConId.replace(newConId));
+//                    map.put(oldConId, oldConId.replace(newConId));
+                    map.put(oldConId, null);
                 } else {
-                    map.put(oldConId, oldConId);
+//                    map.put(oldConId, oldConId);
+                    map.put(oldConId, null);
                 }
             }
 
             HaskellConid originalModuleName = conidList.get(conidList.size() - 1);
             PsiElement originalModuleNameParent = originalModuleName.getParent();
             PsiElement dot = originalModuleName.getPrevSibling();
-            HaskellConid newModuleName = (HaskellConid)originalModuleName.copy();
+            HaskellConid lastAddedNewConId = null;
             for (; i< subDirs.size();i++){
                 HaskellConid newConId = HaskellElementFactory.createConidFromText(project, subDirs.get(i));
                 originalModuleNameParent.addBefore(newConId, originalModuleName);
                 originalModuleNameParent.addBefore(dot.copy(), originalModuleName);
+                lastAddedNewConId = newConId;
             }
-//            map.put(originalModuleName,originalModuleName.replace(newModuleName));
-            map.put(originalModuleName,originalModuleName);
+            map.put(originalModuleName,originalModuleName.getParent());
         }
     }
 
@@ -151,6 +150,10 @@ public class HaskellMoveFileHandler extends MoveFileHandler {
                 MoveRenameUsageInfo moveRenameUsageInfo = (MoveRenameUsageInfo) usageInfo;
                 PsiElement oldElement = moveRenameUsageInfo.getReferencedElement();
                 PsiElement newElement = oldToNewMap.get(oldElement);
+//                if (newElement instanceof HaskellQconid){
+//                    oldElement.getParent().replace(newElement);
+//                    continue;
+//                }
                 PsiReference reference = moveRenameUsageInfo.getReference();
                 if (reference != null){
                     if (newElement != null) {
