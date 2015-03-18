@@ -101,31 +101,18 @@ public class HaskellMoveFileHandler extends MoveFileHandler {
                     map.put(oldConId, oldConId);
                 }
             }
-            HaskellConid moduleName = conidList.get(conidList.size()-1);
-            PsiElement dot = moduleName.getPrevSibling();
-            String currentSubDir = subDirs.get(i);
-            HaskellConid newModuleElement = HaskellElementFactory.createConidFromText(project, currentSubDir);
-            ++i;
+
+            HaskellConid originalModuleName = conidList.get(conidList.size() - 1);
+            PsiElement originalModuleNameParent = originalModuleName.getParent();
+            PsiElement dot = originalModuleName.getPrevSibling();
+            HaskellConid newModuleName = (HaskellConid)originalModuleName.copy();
             for (; i< subDirs.size();i++){
                 HaskellConid newConId = HaskellElementFactory.createConidFromText(project, subDirs.get(i));
-                newModuleElement.addAfter(dot.copy(),null);
-                newModuleElement.addAfter(newConId,null);
+                originalModuleNameParent.addBefore(newConId, originalModuleName);
+                originalModuleNameParent.addBefore(dot.copy(), originalModuleName);
             }
-            newModuleElement.addAfter(dot.copy(),null);
-            newModuleElement.addAfter(moduleName,null);
-            map.put(moduleName,moduleName.replace(newModuleElement));
-
-//            HaskellConid lastCon = conidList.get(i - 1);
-//            PsiElement dot = lastCon.getNextSibling();
-//            PsiElement parent = lastCon.getParent();
-//            for (; i < subDirs.size(); i++){
-//                String currentSubDir = subDirs.get(i);
-//                HaskellConid newConId = HaskellElementFactory.createConidFromText(project, currentSubDir);
-//                PsiElement newDot = dot.copy();
-//                parent.addAfter(newConId,lastCon);
-//                parent.addAfter(newDot,lastCon);
-//                lastCon = newConId;
-//            }
+//            map.put(originalModuleName,originalModuleName.replace(newModuleName));
+            map.put(originalModuleName,originalModuleName);
         }
     }
 

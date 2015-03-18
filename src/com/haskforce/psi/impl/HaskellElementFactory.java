@@ -72,6 +72,11 @@ public class HaskellElementFactory {
         return ((PsiWhiteSpace) (createFileFromText(project, "\n")).getFirstChild());
     }
 
+    @NotNull
+    public static PsiElement createDot(@NotNull Project project) {
+        return  (createFileFromText(project, ".")).getFirstChild();
+    }
+
     /**
      * Takes an expression in text and returns a Psi tree of that program.
      */
