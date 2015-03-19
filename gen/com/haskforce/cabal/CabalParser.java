@@ -73,9 +73,6 @@ public class CabalParser implements PsiParser {
     else if (t == CC_OPTIONS) {
       r = ccOptions(b, 0);
     }
-    else if (t == COMMENT) {
-      r = comment(b, 0);
-    }
     else if (t == COMPILER) {
       r = compiler(b, 0);
     }
@@ -710,24 +707,13 @@ public class CabalParser implements PsiParser {
   }
 
   /* ********************************************************** */
-  // keyOrConfig* | comment
+  // keyOrConfig*
   static boolean cabal(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "cabal")) return false;
-    boolean r;
-    Marker m = enter_section_(b);
-    r = cabal_0(b, l + 1);
-    if (!r) r = comment(b, l + 1);
-    exit_section_(b, m, null, r);
-    return r;
-  }
-
-  // keyOrConfig*
-  private static boolean cabal_0(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "cabal_0")) return false;
     int c = current_position_(b);
     while (true) {
       if (!keyOrConfig(b, l + 1)) break;
-      if (!empty_element_parsed_guard_(b, "cabal_0", c)) break;
+      if (!empty_element_parsed_guard_(b, "cabal", c)) break;
       c = current_position_(b);
     }
     return true;
@@ -955,7 +941,7 @@ public class CabalParser implements PsiParser {
   }
 
   /* ********************************************************** */
-  // <<p>> (',' <<p>>)*
+  // <<p>> ( ',' <<p>>)*
   static boolean commaSeparate(PsiBuilder b, int l, final Parser _p) {
     if (!recursion_guard_(b, l, "commaSeparate")) return false;
     boolean r, p;
@@ -967,7 +953,7 @@ public class CabalParser implements PsiParser {
     return r || p;
   }
 
-  // (',' <<p>>)*
+  // ( ',' <<p>>)*
   private static boolean commaSeparate_1(PsiBuilder b, int l, final Parser _p) {
     if (!recursion_guard_(b, l, "commaSeparate_1")) return false;
     int c = current_position_(b);
@@ -989,18 +975,6 @@ public class CabalParser implements PsiParser {
     r = r && _p.parse(b, l);
     exit_section_(b, l, m, null, r, p, null);
     return r || p;
-  }
-
-  /* ********************************************************** */
-  // commentRegexp
-  public static boolean comment(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "comment")) return false;
-    if (!nextTokenIs(b, COMMENTREGEXP)) return false;
-    boolean r;
-    Marker m = enter_section_(b);
-    r = consumeToken(b, COMMENTREGEXP);
-    exit_section_(b, m, COMMENT, r);
-    return r;
   }
 
   /* ********************************************************** */
@@ -1525,17 +1499,39 @@ public class CabalParser implements PsiParser {
   }
 
   /* ********************************************************** */
-  // exposedKey colon open bool close
+  // exposedKey colon (open bool close)*
   public static boolean exposed(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "exposed")) return false;
     if (!nextTokenIs(b, EXPOSEDKEY)) return false;
     boolean r;
     Marker m = enter_section_(b);
     r = consumeTokens(b, 0, EXPOSEDKEY, COLON);
-    r = r && open(b, l + 1);
+    r = r && exposed_2(b, l + 1);
+    exit_section_(b, m, EXPOSED, r);
+    return r;
+  }
+
+  // (open bool close)*
+  private static boolean exposed_2(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "exposed_2")) return false;
+    int c = current_position_(b);
+    while (true) {
+      if (!exposed_2_0(b, l + 1)) break;
+      if (!empty_element_parsed_guard_(b, "exposed_2", c)) break;
+      c = current_position_(b);
+    }
+    return true;
+  }
+
+  // open bool close
+  private static boolean exposed_2_0(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "exposed_2_0")) return false;
+    boolean r;
+    Marker m = enter_section_(b);
+    r = open(b, l + 1);
     r = r && bool(b, l + 1);
     r = r && close(b, l + 1);
-    exit_section_(b, m, EXPOSED, r);
+    exit_section_(b, m, null, r);
     return r;
   }
 
@@ -2616,8 +2612,7 @@ public class CabalParser implements PsiParser {
   }
 
   /* ********************************************************** */
-  // exposedModulesKey colon open <<commaSeparate module >> close |
-  //                         exposedModulesKey colon open module* close |
+  // exposedModulesKey colon (open <<cabalList module >> close)* |
   //                         exposed
   public static boolean librarySpecificKeys(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "librarySpecificKeys")) return false;
@@ -2625,48 +2620,44 @@ public class CabalParser implements PsiParser {
     boolean r;
     Marker m = enter_section_(b, l, _NONE_, "<library specific keys>");
     r = librarySpecificKeys_0(b, l + 1);
-    if (!r) r = librarySpecificKeys_1(b, l + 1);
     if (!r) r = exposed(b, l + 1);
     exit_section_(b, l, m, LIBRARY_SPECIFIC_KEYS, r, false, null);
     return r;
   }
 
-  // exposedModulesKey colon open <<commaSeparate module >> close
+  // exposedModulesKey colon (open <<cabalList module >> close)*
   private static boolean librarySpecificKeys_0(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "librarySpecificKeys_0")) return false;
     boolean r;
     Marker m = enter_section_(b);
     r = consumeTokens(b, 0, EXPOSEDMODULESKEY, COLON);
-    r = r && open(b, l + 1);
-    r = r && commaSeparate(b, l + 1, module_parser_);
-    r = r && close(b, l + 1);
+    r = r && librarySpecificKeys_0_2(b, l + 1);
     exit_section_(b, m, null, r);
     return r;
   }
 
-  // exposedModulesKey colon open module* close
-  private static boolean librarySpecificKeys_1(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "librarySpecificKeys_1")) return false;
-    boolean r;
-    Marker m = enter_section_(b);
-    r = consumeTokens(b, 0, EXPOSEDMODULESKEY, COLON);
-    r = r && open(b, l + 1);
-    r = r && librarySpecificKeys_1_3(b, l + 1);
-    r = r && close(b, l + 1);
-    exit_section_(b, m, null, r);
-    return r;
-  }
-
-  // module*
-  private static boolean librarySpecificKeys_1_3(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "librarySpecificKeys_1_3")) return false;
+  // (open <<cabalList module >> close)*
+  private static boolean librarySpecificKeys_0_2(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "librarySpecificKeys_0_2")) return false;
     int c = current_position_(b);
     while (true) {
-      if (!module(b, l + 1)) break;
-      if (!empty_element_parsed_guard_(b, "librarySpecificKeys_1_3", c)) break;
+      if (!librarySpecificKeys_0_2_0(b, l + 1)) break;
+      if (!empty_element_parsed_guard_(b, "librarySpecificKeys_0_2", c)) break;
       c = current_position_(b);
     }
     return true;
+  }
+
+  // open <<cabalList module >> close
+  private static boolean librarySpecificKeys_0_2_0(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "librarySpecificKeys_0_2_0")) return false;
+    boolean r;
+    Marker m = enter_section_(b);
+    r = open(b, l + 1);
+    r = r && cabalList(b, l + 1, module_parser_);
+    r = r && close(b, l + 1);
+    exit_section_(b, m, null, r);
+    return r;
   }
 
   /* ********************************************************** */
@@ -2781,17 +2772,39 @@ public class CabalParser implements PsiParser {
   }
 
   /* ********************************************************** */
-  // mainIsKey colon open fileName close
+  // mainIsKey colon (open filePath close)*
   public static boolean mainIs(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "mainIs")) return false;
     if (!nextTokenIs(b, MAINISKEY)) return false;
     boolean r;
     Marker m = enter_section_(b);
     r = consumeTokens(b, 0, MAINISKEY, COLON);
-    r = r && open(b, l + 1);
-    r = r && fileName(b, l + 1);
-    r = r && close(b, l + 1);
+    r = r && mainIs_2(b, l + 1);
     exit_section_(b, m, MAIN_IS, r);
+    return r;
+  }
+
+  // (open filePath close)*
+  private static boolean mainIs_2(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "mainIs_2")) return false;
+    int c = current_position_(b);
+    while (true) {
+      if (!mainIs_2_0(b, l + 1)) break;
+      if (!empty_element_parsed_guard_(b, "mainIs_2", c)) break;
+      c = current_position_(b);
+    }
+    return true;
+  }
+
+  // open filePath close
+  private static boolean mainIs_2_0(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "mainIs_2_0")) return false;
+    boolean r;
+    Marker m = enter_section_(b);
+    r = open(b, l + 1);
+    r = r && filePath(b, l + 1);
+    r = r && close(b, l + 1);
+    exit_section_(b, m, null, r);
     return r;
   }
 
@@ -3434,17 +3447,39 @@ public class CabalParser implements PsiParser {
   }
 
   /* ********************************************************** */
-  // testModuleKey colon open varid close
+  // testModuleKey colon (open varid close)*
   public static boolean testModules(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "testModules")) return false;
     if (!nextTokenIs(b, TESTMODULEKEY)) return false;
     boolean r;
     Marker m = enter_section_(b);
     r = consumeTokens(b, 0, TESTMODULEKEY, COLON);
-    r = r && open(b, l + 1);
+    r = r && testModules_2(b, l + 1);
+    exit_section_(b, m, TEST_MODULES, r);
+    return r;
+  }
+
+  // (open varid close)*
+  private static boolean testModules_2(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "testModules_2")) return false;
+    int c = current_position_(b);
+    while (true) {
+      if (!testModules_2_0(b, l + 1)) break;
+      if (!empty_element_parsed_guard_(b, "testModules_2", c)) break;
+      c = current_position_(b);
+    }
+    return true;
+  }
+
+  // open varid close
+  private static boolean testModules_2_0(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "testModules_2_0")) return false;
+    boolean r;
+    Marker m = enter_section_(b);
+    r = open(b, l + 1);
     r = r && varid(b, l + 1);
     r = r && close(b, l + 1);
-    exit_section_(b, m, TEST_MODULES, r);
+    exit_section_(b, m, null, r);
     return r;
   }
 
@@ -3508,17 +3543,39 @@ public class CabalParser implements PsiParser {
   }
 
   /* ********************************************************** */
-  // typeKey colon open testInterface close
+  // typeKey colon (open testInterface close)*
   public static boolean testSuiteType(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "testSuiteType")) return false;
     if (!nextTokenIs(b, TYPEKEY)) return false;
     boolean r;
     Marker m = enter_section_(b);
     r = consumeTokens(b, 0, TYPEKEY, COLON);
-    r = r && open(b, l + 1);
+    r = r && testSuiteType_2(b, l + 1);
+    exit_section_(b, m, TEST_SUITE_TYPE, r);
+    return r;
+  }
+
+  // (open testInterface close)*
+  private static boolean testSuiteType_2(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "testSuiteType_2")) return false;
+    int c = current_position_(b);
+    while (true) {
+      if (!testSuiteType_2_0(b, l + 1)) break;
+      if (!empty_element_parsed_guard_(b, "testSuiteType_2", c)) break;
+      c = current_position_(b);
+    }
+    return true;
+  }
+
+  // open testInterface close
+  private static boolean testSuiteType_2_0(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "testSuiteType_2_0")) return false;
+    boolean r;
+    Marker m = enter_section_(b);
+    r = open(b, l + 1);
     r = r && testInterface(b, l + 1);
     r = r && close(b, l + 1);
-    exit_section_(b, m, TEST_SUITE_TYPE, r);
+    exit_section_(b, m, null, r);
     return r;
   }
 

@@ -1,6 +1,7 @@
 package com.haskforce.codeInsight;
 
 import com.haskforce.HaskellLightPlatformCodeInsightFixtureTestCase;
+import com.haskforce.cabal.psi.CabalVarid;
 import com.haskforce.psi.HaskellCon;
 import com.haskforce.psi.HaskellConid;
 import com.haskforce.psi.HaskellVarid;
@@ -543,7 +544,23 @@ public class HaskellGoToSymbolTest extends HaskellLightPlatformCodeInsightFixtur
         assertEquals(expectedStartOffset, referencedElement.getTextRange().getStartOffset());
     }
 
-
+    public void testResolveFromCabalModuleDeclaration() {
+        PsiFile[] psiFiles = myFixture.configureByFiles(
+                "ResolveFromCabalModuleDeclaration/CabalFile.cabal",
+                "ResolveFromCabalModuleDeclaration/Koekoek/Duif.hs"
+        );
+        PsiFile cabalFile = psiFiles[0];
+        PsiFile haskellFile = psiFiles[1];
+        String textOfFile = haskellFile.getText();
+        int expectedStartOffset = textOfFile.indexOf("Koekoek");
+        PsiElement psiElement = cabalFile
+                .findElementAt(myFixture.getCaretOffset()).getParent();
+        CabalVarid cabalVarid = (CabalVarid) psiElement;
+        PsiReference reference = cabalVarid.getReference();
+        HaskellConid referencedElement = (HaskellConid) reference.resolve();
+        assertNotSame(psiElement, referencedElement);
+        assertEquals(expectedStartOffset, referencedElement.getTextRange().getStartOffset());
+    }
 
 
 }

@@ -23,8 +23,8 @@ public class CabalTestSuiteTypeImpl extends CabalCompositeElementImpl implements
 
   @Override
   @NotNull
-  public CabalTestInterface getTestInterface() {
-    return findNotNullChildByClass(CabalTestInterface.class);
+  public List<CabalTestInterface> getTestInterfaceList() {
+    return PsiTreeUtil.getChildrenOfTypeAsList(this, CabalTestInterface.class);
   }
 
 }

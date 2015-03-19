@@ -23,8 +23,8 @@ public class CabalExposedImpl extends CabalCompositeElementImpl implements Cabal
 
   @Override
   @NotNull
-  public CabalBool getBool() {
-    return findNotNullChildByClass(CabalBool.class);
+  public List<CabalBool> getBoolList() {
+    return PsiTreeUtil.getChildrenOfTypeAsList(this, CabalBool.class);
   }
 
 }

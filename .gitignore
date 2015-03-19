@@ -4,3 +4,4 @@ build.properties
 *.orig
 .ackrc
 .dist-buildwrapper/
+*.java~

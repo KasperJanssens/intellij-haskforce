@@ -1491,12 +1491,8 @@ Cabal File
             MAIN_IS
               PsiElement(CabalTokenType.main-is)('main-is')
               PsiElement(CabalTokenType.:)(':')
-              FILE_NAME
-                VARID
-                  PsiElement(CabalTokenType.varidRegexp)('RangeTest')
-                PsiElement(CabalTokenType..)('.')
-                VARID
-                  PsiElement(CabalTokenType.varidRegexp)('hs')
+              FILE_PATH
+                PsiElement(CabalTokenType.filePathRegexp)('RangeTest.hs')
         TEST_SUITE_KEYS
           BUILD_INFORMATION
             OTHER_MODULES
@@ -1618,12 +1614,8 @@ Cabal File
             MAIN_IS
               PsiElement(CabalTokenType.main-is)('main-is')
               PsiElement(CabalTokenType.:)(':')
-              FILE_NAME
-                VARID
-                  PsiElement(CabalTokenType.varidRegexp)('SemanticsTest')
-                PsiElement(CabalTokenType..)('.')
-                VARID
-                  PsiElement(CabalTokenType.varidRegexp)('hs')
+              FILE_PATH
+                PsiElement(CabalTokenType.filePathRegexp)('SemanticsTest.hs')
         TEST_SUITE_KEYS
           BUILD_INFORMATION
             OTHER_MODULES
@@ -1745,12 +1737,8 @@ Cabal File
             MAIN_IS
               PsiElement(CabalTokenType.main-is)('main-is')
               PsiElement(CabalTokenType.:)(':')
-              FILE_NAME
-                VARID
-                  PsiElement(CabalTokenType.varidRegexp)('DecorationTests')
-                PsiElement(CabalTokenType..)('.')
-                VARID
-                  PsiElement(CabalTokenType.varidRegexp)('hs')
+              FILE_PATH
+                PsiElement(CabalTokenType.filePathRegexp)('DecorationTests.hs')
         TEST_SUITE_KEYS
           BUILD_INFORMATION
             DEFAULT_LANGUAGE
@@ -1830,9 +1818,9 @@ Cabal File
                   PsiElement(CabalTokenType..)('.')
                   NUMBER
                     PsiElement(CabalTokenType.numberRegexp)('7')
-  PsiComment(COMMENT)('-- TODO')
-  PsiComment(COMMENT)('-- test-suite tutorial')
-  PsiComment(COMMENT)('--   type: exitcode-stdio-1.0')
-  PsiComment(COMMENT)('--   hs-source-dirs: tests examples')
-  PsiComment(COMMENT)('--   main-is: TutorialTest.hs')
-  PsiComment(COMMENT)('--   default-language: Haskell2010')
+              PsiComment(CabalTokenType.comment)('-- TODO')
+              PsiComment(CabalTokenType.comment)('-- test-suite tutorial')
+              PsiComment(CabalTokenType.comment)('--   type: exitcode-stdio-1.0')
+              PsiComment(CabalTokenType.comment)('--   hs-source-dirs: tests examples')
+              PsiComment(CabalTokenType.comment)('--   main-is: TutorialTest.hs')
+              PsiComment(CabalTokenType.comment)('--   default-language: Haskell2010')

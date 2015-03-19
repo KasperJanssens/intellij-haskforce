@@ -36,6 +36,19 @@ public class HaskellReference extends PsiReferenceBase<PsiNamedElement> implemen
         name = element.getName();
     }
 
+    @Override
+    public PsiElement bindToElement(@NotNull PsiElement element) throws IncorrectOperationException {
+        /**
+         * Not sure this is totally canonical. I didn't find an indicator how to implement this method correctly,
+         * not even in the java or groovy plugins. Couldn't find my way to the correct reference maybe, but all
+         * implementations I saw up until now did not perform this replace, just returned the element that it passed in.
+         * They implemented an 'id' function so to speak.
+         * I'm a bit afraid that this is going to trigger a rename for every element.
+         */
+        this.myElement.replace(element);
+        return element;
+    }
+
     public static final ResolveResult[] EMPTY_RESOLVE_RESULT = new ResolveResult[0];
 
     /**
@@ -44,7 +57,7 @@ public class HaskellReference extends PsiReferenceBase<PsiNamedElement> implemen
     @NotNull
     @Override
     public ResolveResult[] multiResolve(boolean incompleteCode) {
-        FileBasedIndex.getInstance().getContainingFiles(ID.create("FilenameIndex"),"DungeonMaster.hs",GlobalSearchScope.allScope(myElement.getProject()));
+//        FileBasedIndex.getInstance().getContainingFiles(ID.create("FilenameIndex"),"DungeonMaster.hs",GlobalSearchScope.allScope(myElement.getProject()));
         // We should only be resolving varids or conids.
         if (!(myElement instanceof HaskellVarid || myElement instanceof HaskellConid)) {
             return EMPTY_RESOLVE_RESULT;
@@ -211,6 +224,11 @@ public class HaskellReference extends PsiReferenceBase<PsiNamedElement> implemen
             GlobalSearchScope globalSearchScope = GlobalSearchScope.projectScope(myElement.getProject());
             List<HaskellFile> filesByModuleName = HaskellModuleIndex.getFilesByModuleName(myElement.getProject(), moduleName, globalSearchScope);
             for (HaskellFile haskellFile : filesByModuleName) {
+                /**
+                 * TODO Kasper: shouldn't this better be getChildOfType? Don't do anything with the list, and indeed I
+                 * don't
+                 * think it's even possible to have multiple modules declarations in one file in Haskell
+                 */
                 HaskellModuledecl[] moduleDecls = PsiTreeUtil.getChildrenOfType(haskellFile, HaskellModuledecl.class);
                 if (moduleDecls.length != 0){
                     List<HaskellConid> conidList = moduleDecls[0].getQconid().getConidList();

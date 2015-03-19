@@ -24,7 +24,6 @@ public interface CabalTypes {
   IElementType CABAL_VERSION = new CabalElementType("CABAL_VERSION");
   IElementType CATEGORY = new CabalElementType("CATEGORY");
   IElementType CC_OPTIONS = new CabalElementType("CC_OPTIONS");
-  IElementType COMMENT = new CabalElementType("COMMENT");
   IElementType COMPILER = new CabalElementType("COMPILER");
   IElementType CONDITION = new CabalElementType("CONDITION");
   IElementType CONDITIONAL = new CabalElementType("CONDITIONAL");
@@ -115,7 +114,7 @@ public interface CabalTypes {
   IElementType CCOPTIONSKEY = new CabalTokenType("cc-options");
   IElementType COLON = new CabalTokenType(":");
   IElementType COMMA = new CabalTokenType(",");
-  IElementType COMMENTREGEXP = new CabalTokenType("commentRegexp");
+  IElementType COMMENT = new CabalTokenType("comment");
   IElementType CONDITIONREGEXP = new CabalTokenType("conditionRegexp");
   IElementType COPYRIGHTKEY = new CabalTokenType("copyright");
   IElementType CPPOPTIONSKEY = new CabalTokenType("cpp-options");
@@ -235,9 +234,6 @@ public interface CabalTypes {
       }
       else if (type == CC_OPTIONS) {
         return new CabalCcOptionsImpl(node);
-      }
-      else if (type == COMMENT) {
-        return new CabalCommentImpl(node);
       }
       else if (type == COMPILER) {
         return new CabalCompilerImpl(node);

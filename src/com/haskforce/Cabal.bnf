@@ -1,12 +1,14 @@
 {
   parserClass="com.haskforce.cabal.CabalParser"
   implements="com.haskforce.cabal.psi.CabalCompositeElement"
+  implements("varid")="com.haskforce.cabal.psi.CabalNamedElement"
   extends="com.haskforce.cabal.psi.impl.CabalCompositeElementImpl"
   elementTypeHolderClass="com.haskforce.cabal.psi.CabalTypes"
   elementTypeClass="com.haskforce.cabal.psi.CabalElementType"
   tokenTypeClass="com.haskforce.cabal.psi.CabalTokenType"
   psiClassPrefix="Cabal"
   psiImplClassSuffix="Impl"
+  psiImplUtilClass="com.haskforce.cabal.psi.impl.CabalPsiImplUtil"
   psiPackage="com.haskforce.cabal.psi"
   psiImplPackage="com.haskforce.cabal.psi.impl"
   tokens=[
@@ -86,7 +88,7 @@
     crlf="regexp:[\r\n]"
     if="if"
     else="else"
-    commentRegexp="regexp:--([^\^\r\n][^\r\n]*|[\r\n])"
+    comment="regexp:--([^\^\r\n][^\r\n]*|[\r\n])"
     varidRegexp="regexp:[a-zA-Z_\-0-9']*"
     conditionRegexp="regexp:[a-zA-Z_\-0-9'()<&>=!.]*"
     filePathRegexp="regexp:[a-zA-Z_\-0-9*./']*"
@@ -97,9 +99,7 @@
   ]
 }
 
-cabal ::= keyOrConfig* | comment
-
-comment ::= commentRegexp
+cabal ::= keyOrConfig*
 
 library ::= "library" open libraryKeys+ close
 
@@ -141,7 +141,9 @@ condtionalKey ::= key | librarySpecificKeys | executableSpecificKeys | buildInfo
 conditional ::= if condition open condtionalKey+ close
   (else open condtionalKey+ close)*
 
-varid ::= varidRegexp
+varid ::= varidRegexp {
+    methods=[getName getReference getNameIdentifier setName]
+    }
 
 dependencyName ::= varidRegexp
 
@@ -268,34 +270,32 @@ buildInformation ::= buildDepends |
                      defaultLanguage
 
 
-testSuiteType ::= typeKey colon open testInterface close
-mainIs ::= mainIsKey colon open fileName close
-testModules ::= testModuleKey colon open varid close
+testSuiteType ::= typeKey colon (open testInterface close)*
+mainIs ::= mainIsKey colon (open filePath close)*
+testModules ::= testModuleKey colon (open varid close)*
 
 testSuiteSpecificKeys ::= testSuiteType |
                           mainIs |
                           testModules
 
-exposed ::= exposedKey colon open bool close
+exposed ::= exposedKey colon (open bool close)*
 
-librarySpecificKeys ::= exposedModulesKey colon open <<commaSeparate module >> close |
-                        exposedModulesKey colon open module* close |
+librarySpecificKeys ::= exposedModulesKey colon (open <<cabalList module >> close)* |
                         exposed
 
 executableSpecificKeys ::= mainIs
 
 benchmarkKeys ::= mainIs | testSuiteType | buildInformation | conditional
 
-private meta commaSeparate ::= <<p>> (',' <<p>>)* {pin(".*")=1}
+private meta commaSeparate ::= <<p>> ( ',' <<p>>)* {pin(".*")=1}
 
-//TODO find out how pinning works in this case.
+//TODO find out how pinning works i{pin(".*")=1}n this case.
 // Or maybe just find out how pinning actually works.
 private meta cabalList ::= <<p>> (',' <<p>>)+ | <<p>>+
 
 private meta dotSeparate ::= <<p>> ('.' <<p>>)* {pin(".*")=1}
 
 private meta slashSeparate ::= <<p>> ('/' <<p>>)* {pin(".*")=1}
-
 
 module ::= <<dotSeparate varid>>
 

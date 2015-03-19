@@ -5,6 +5,7 @@ import com.haskforce.cabal.CabalLanguage;
 import com.haskforce.cabal.psi.CabalBuildInformation;
 import com.haskforce.cabal.psi.CabalDependency;
 import com.haskforce.cabal.psi.CabalFile;
+import com.haskforce.cabal.psi.CabalVarid;
 import com.haskforce.psi.HaskellFile;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiElement;
@@ -20,7 +21,7 @@ public class CabalElementFactory {
     }
 
     public static CabalBuildInformation createCabalBuildInformation(Project project, String packageName) {
-        String textToParse = "library\n  build-depends:\n    " + packageName;
+        String textToParse = "library\n  build-depends:\n    " + packageName+",\n    "+packageName;
         CabalFile fileFromText = createFileFromText(project, textToParse);
         return PsiTreeUtil.findChildOfType(fileFromText, CabalBuildInformation.class);
     }
@@ -32,4 +33,9 @@ public class CabalElementFactory {
         return (CabalFile) PsiFileFactory.getInstance(project).createFileFromText("A.cabal", CabalLanguage.INSTANCE, text);
     }
 
+    public static PsiElement createVaridFromText(Project project, String newName) {
+        String textToParse = "library\n  exposed-modules:\n    "+newName;
+        CabalFile fileFromText = createFileFromText(project, textToParse);
+        return PsiTreeUtil.findChildOfType(fileFromText, CabalVarid.class);
+    }
 }

@@ -23,8 +23,8 @@ public class CabalTestModulesImpl extends CabalCompositeElementImpl implements C
 
   @Override
   @NotNull
-  public CabalVarid getVarid() {
-    return findNotNullChildByClass(CabalVarid.class);
+  public List<CabalVarid> getVaridList() {
+    return PsiTreeUtil.getChildrenOfTypeAsList(this, CabalVarid.class);
   }
 
 }

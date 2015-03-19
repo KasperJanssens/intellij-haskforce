@@ -8,6 +8,6 @@ import com.intellij.psi.PsiElement;
 public interface CabalMainIs extends CabalCompositeElement {
 
   @NotNull
-  CabalFileName getFileName();
+  List<CabalFilePath> getFilePathList();
 
 }

@@ -74,10 +74,6 @@ public class CabalVisitor extends PsiElementVisitor {
     visitCompositeElement(o);
   }
 
-  public void visitComment(@NotNull CabalComment o) {
-    visitCompositeElement(o);
-  }
-
   public void visitCompiler(@NotNull CabalCompiler o) {
     visitCompositeElement(o);
   }
@@ -363,7 +359,7 @@ public class CabalVisitor extends PsiElementVisitor {
   }
 
   public void visitVarid(@NotNull CabalVarid o) {
-    visitCompositeElement(o);
+    visitNamedElement(o);
   }
 
   public void visitVersion(@NotNull CabalVersion o) {
@@ -371,6 +367,10 @@ public class CabalVisitor extends PsiElementVisitor {
   }
 
   public void visitVersionConstraint(@NotNull CabalVersionConstraint o) {
+    visitCompositeElement(o);
+  }
+
+  public void visitNamedElement(@NotNull CabalNamedElement o) {
     visitCompositeElement(o);
   }
 

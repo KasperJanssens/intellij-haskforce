@@ -8,6 +8,6 @@ import com.intellij.psi.PsiElement;
 public interface CabalExposed extends CabalCompositeElement {
 
   @NotNull
-  CabalBool getBool();
+  List<CabalBool> getBoolList();
 
 }

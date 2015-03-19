@@ -8,6 +8,6 @@ import com.intellij.psi.PsiElement;
 public interface CabalTestModules extends CabalCompositeElement {
 
   @NotNull
-  CabalVarid getVarid();
+  List<CabalVarid> getVaridList();
 
 }

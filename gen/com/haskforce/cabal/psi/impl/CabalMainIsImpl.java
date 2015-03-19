@@ -23,8 +23,8 @@ public class CabalMainIsImpl extends CabalCompositeElementImpl implements CabalM
 
   @Override
   @NotNull
-  public CabalFileName getFileName() {
-    return findNotNullChildByClass(CabalFileName.class);
+  public List<CabalFilePath> getFilePathList() {
+    return PsiTreeUtil.getChildrenOfTypeAsList(this, CabalFilePath.class);
   }
 
 }

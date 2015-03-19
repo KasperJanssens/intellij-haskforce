@@ -8,6 +8,6 @@ import com.intellij.psi.PsiElement;
 public interface CabalTestSuiteType extends CabalCompositeElement {
 
   @NotNull
-  CabalTestInterface getTestInterface();
+  List<CabalTestInterface> getTestInterfaceList();
 
 }
