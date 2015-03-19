@@ -58,4 +58,5 @@ public class CabalParserTest extends CabalParserTestBase {
     public void testEmptyKeyShouldBeAllowed()       { doTest(true, true); }
     public void testMainIsContainsPath()       { doTest(true, true); }
     public void testKeyContainsComment()       { doTest(true, true); }
+    public void testCommasOnNextLine()         {doTest(true,true);}
 }
