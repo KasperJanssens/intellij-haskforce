@@ -568,7 +568,7 @@ CRLF=([\r\n])
                           return com.intellij.psi.TokenType.WHITE_SPACE;
                       }
       {COMMENT}          { return COMMENT; }
-
+H
       [^]             {
                           yypushback(1);
                           if (indentationStack.isEmpty()){
