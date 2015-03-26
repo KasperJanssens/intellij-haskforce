@@ -525,6 +525,9 @@ CRLF=([\r\n])
       [\n]            {
                           return com.intellij.psi.TokenType.WHITE_SPACE;
                       }
+      ","             {
+                         return COMMA;
+                      }
       {COMMENT}          { return COMMENT; }
       [^]             {
                           yypushback(1);
@@ -565,6 +568,7 @@ CRLF=([\r\n])
                           return com.intellij.psi.TokenType.WHITE_SPACE;
                       }
       {COMMENT}          { return COMMENT; }
+
       [^]             {
                           yypushback(1);
                           if (indentationStack.isEmpty()){
