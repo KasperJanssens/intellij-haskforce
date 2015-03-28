@@ -1,6 +1,7 @@
 package com.haskforce.codeInsight;
 
 import com.haskforce.HaskellLightPlatformCodeInsightFixtureTestCase;
+import com.haskforce.cabal.psi.CabalVarid;
 import com.haskforce.psi.HaskellCon;
 import com.haskforce.psi.HaskellConid;
 import com.haskforce.psi.HaskellVarid;

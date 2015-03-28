@@ -166,7 +166,6 @@ public class HaskellReference extends PsiReferenceBase<PsiNamedElement> implemen
 //        Collection<HaskellNamedElement> namedElements = StubIndex.getElements(HaskellAllNameIndex.KEY, name, project, scope, HaskellNamedElement.class);
 
         // Guess 20 variants tops most of the time in any real code base.
-        final List<PsiNamedElement> namedElements = HaskellUtil.findDefinitionNode(project, name, myElement);
         List<ResolveResult> results = new ArrayList<ResolveResult>(20);
         List<HaskellPsiUtil.Import> imports = HaskellPsiUtil.parseImports(myElement.getContainingFile());
 
