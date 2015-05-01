@@ -4,7 +4,9 @@ import com.haskforce.HaskellLightPlatformCodeInsightFixtureTestCase;
 import com.haskforce.cabal.psi.CabalVarid;
 import com.haskforce.psi.HaskellCon;
 import com.haskforce.psi.HaskellConid;
+import com.haskforce.psi.HaskellQconid;
 import com.haskforce.psi.HaskellVarid;
+import com.intellij.psi.PsiDirectory;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiReference;
@@ -560,6 +562,54 @@ public class HaskellGoToSymbolTest extends HaskellLightPlatformCodeInsightFixtur
         HaskellConid referencedElement = (HaskellConid) reference.resolve();
         assertNotSame(psiElement, referencedElement);
         assertEquals(expectedStartOffset, referencedElement.getTextRange().getStartOffset());
+    }
+
+    public void testResolveToPsiDirectory() {
+        PsiFile[] psiFiles = myFixture.configureByFiles(
+                "ResolveToPsiDirectory/AFolder/B.hs"
+        );
+        PsiFile file = psiFiles[0];
+        PsiElement psiElement = file.findElementAt(myFixture.getCaretOffset()).getParent();
+
+        HaskellConid conId = (HaskellConid) psiElement;
+        PsiReference reference = conId.getReference();
+        PsiElement actual = reference.resolve();
+
+        assertTrue(actual instanceof PsiDirectory);
+        assertEquals(file.getContainingDirectory(),actual);
+
+    }
+
+    public void testResolveToPsiDirectoryImport() {
+        PsiFile[] psiFiles = myFixture.configureByFiles(
+                "ResolveToPsiDirectory/AFolder/ImportB.hs"
+        );
+        PsiFile file = psiFiles[0];
+        PsiElement psiElement = file.findElementAt(myFixture.getCaretOffset()).getParent();
+
+        HaskellConid conId = (HaskellConid) psiElement;
+        PsiReference reference = conId.getReference();
+        PsiElement actual = reference.resolve();
+
+        assertTrue(actual instanceof PsiDirectory);
+        assertEquals(file.getContainingDirectory(),actual);
+
+    }
+
+    public void testResolveToDeeperPsiDirectory(){
+        PsiFile[] psiFiles = myFixture.configureByFiles(
+                "ResolveToDeeperPsiDirectory/AFolder/BFolder/C.hs"
+        );
+        PsiFile file = psiFiles[0];
+        PsiElement psiElement = file.findElementAt(myFixture.getCaretOffset()).getParent();
+        PsiDirectory expectedDirectory = file.getContainingDirectory().getParentDirectory();
+
+        HaskellConid conId = (HaskellConid) psiElement;
+        PsiReference reference = conId.getReference();
+        PsiElement actual = reference.resolve();
+
+        assertTrue(actual instanceof PsiDirectory);
+        assertEquals(expectedDirectory,actual);
     }
 
 

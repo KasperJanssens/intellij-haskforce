@@ -1,0 +1,1 @@
+module A<caret>Package.ModuleName where
