@@ -1,5 +1,6 @@
 package com.haskforce.psi.references;
 
+import com.google.common.collect.Iterables;
 import com.haskforce.cabal.psi.CabalModule;
 import com.haskforce.cabal.psi.CabalVarid;
 import com.haskforce.cabal.psi.impl.CabalPsiImplUtil;
@@ -45,8 +46,47 @@ public class CabalReference extends PsiReferenceBase<PsiNamedElement> implements
     @Override
     public ResolveResult[] multiResolve(boolean b) {
         List<ResolveResult> results = new ArrayList<ResolveResult>(20);
-        PsiElement cabalModule = myElement.getParent();
-        if ( myElement instanceof CabalVarid && cabalModule instanceof CabalModule) {
+        if (myElement instanceof CabalVarid){
+            PsiElement parent = myElement.getParent();
+            if(parent instanceof  CabalModule){
+                CabalModule cabalModule =(CabalModule) parent;
+                CabalVarid lastVarId = Iterables.getLast(cabalModule.getVaridList());
+                if(myElement.equals(lastVarId)){
+                    String moduleName = cabalModule.getText();
+                    Project project = myElement.getProject();
+                    List<HaskellFile> allHaskellFiles = HaskellModuleIndex.getFilesByModuleName(project, moduleName,
+                            GlobalSearchScope.allScope(project));
+                    for (HaskellFile haskellFile : allHaskellFiles) {
+                        HaskellModuledecl haskellModule = PsiTreeUtil.getChildOfType(haskellFile, HaskellModuledecl.class);
+                        if (haskellModule == null){
+                            continue;
+                        }
+                        HaskellQconid qconid = haskellModule.getQconid();
+                        if (qconid != null) {
+                            results.add(new PsiElementResolveResult(qconid));
+                        }
+                    }
+                }
+            }
+        }
+        if (myElement instanceof CabalModule){
+            CabalModule cabalModule =(CabalModule)myElement;
+            String moduleName = cabalModule.getText();
+            Project project = myElement.getProject();
+            List<HaskellFile> allHaskellFiles = HaskellModuleIndex.getFilesByModuleName(project, moduleName,
+                    GlobalSearchScope.allScope(project));
+            for (HaskellFile haskellFile : allHaskellFiles) {
+                HaskellModuledecl haskellModule = PsiTreeUtil.getChildOfType(haskellFile, HaskellModuledecl.class);
+                if (haskellModule == null){
+                    continue;
+                }
+                HaskellQconid qconid = haskellModule.getQconid();
+                if (qconid != null) {
+                    results.add(new PsiElementResolveResult(qconid));
+                }
+            }
+        }
+/*        if ( myElement instanceof CabalVarid && cabalModule instanceof CabalModule) {
             String moduleName = cabalModule.getText();
             Project project = myElement.getProject();
             List<HaskellFile> allHaskellFiles = HaskellModuleIndex.getFilesByModuleName(project, moduleName,
@@ -77,7 +117,7 @@ public class CabalReference extends PsiReferenceBase<PsiNamedElement> implements
                 results.add(new PsiElementResolveResult(haskellConid));
 
             }
-        }
+        }*/
         return results.toArray(new ResolveResult[results.size()]);
     }
 

@@ -1,12 +1,16 @@
 package com.haskforce.psi.references;
 
 import com.haskforce.cabal.CabalLanguage;
+import com.haskforce.psi.HaskellConid;
+import com.haskforce.psi.HaskellQconid;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiNamedElement;
 import com.intellij.psi.PsiReference;
 import com.intellij.psi.PsiReferenceProvider;
 import com.intellij.util.ProcessingContext;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.List;
 
 /**
  * Injects additional references into elements that supports
@@ -20,7 +24,6 @@ public class CabalReferenceProvider extends PsiReferenceProvider {
         if (!element.getLanguage().is(CabalLanguage.INSTANCE)) {
             return PsiReference.EMPTY_ARRAY;
         }
-
         if (element instanceof PsiNamedElement) {
             PsiNamedElement se = (PsiNamedElement) element;
             return new PsiReference[]{new CabalReference(se, se.getTextRange())};

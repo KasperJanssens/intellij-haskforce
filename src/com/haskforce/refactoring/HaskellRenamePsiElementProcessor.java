@@ -81,6 +81,13 @@ public class HaskellRenamePsiElementProcessor extends RenamePsiElementProcessor 
                 }
             }
         }
+        if (element instanceof  HaskellConid){
+            HaskellModuledecl haskellModuledecl = PsiTreeUtil.getParentOfType(element, HaskellModuledecl.class);
+            if(haskellModuledecl != null){
+
+            }
+
+        }
         super.prepareRenaming(element, newName, allRenames);
     }
 

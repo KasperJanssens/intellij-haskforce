@@ -1,14 +1,15 @@
 package com.haskforce.codeInsight;
 
 import com.haskforce.HaskellLightPlatformCodeInsightFixtureTestCase;
+import com.haskforce.cabal.psi.CabalModule;
 import com.haskforce.cabal.psi.CabalVarid;
-import com.haskforce.psi.HaskellCon;
-import com.haskforce.psi.HaskellConid;
-import com.haskforce.psi.HaskellVarid;
+import com.haskforce.psi.*;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiReference;
+import com.intellij.psi.util.PsiTreeUtil;
 
+import java.util.Collection;
 
 
 public class HaskellGoToSymbolTest extends HaskellLightPlatformCodeInsightFixtureTestCase {
@@ -553,13 +554,11 @@ public class HaskellGoToSymbolTest extends HaskellLightPlatformCodeInsightFixtur
         PsiFile haskellFile = psiFiles[1];
         String textOfFile = haskellFile.getText();
         int expectedStartOffset = textOfFile.indexOf("Koekoek");
-        PsiElement psiElement = cabalFile
-                .findElementAt(myFixture.getCaretOffset()).getParent();
-        CabalVarid cabalVarid = (CabalVarid) psiElement;
-        PsiReference reference = cabalVarid.getReference();
-        HaskellConid referencedElement = (HaskellConid) reference.resolve();
-        assertNotSame(psiElement, referencedElement);
-        assertEquals(expectedStartOffset, referencedElement.getTextRange().getStartOffset());
+        CabalModule cabalModule = PsiTreeUtil.findChildOfType(cabalFile, CabalModule.class);
+        PsiReference reference = cabalModule.getReference();
+        HaskellQconid referencedElement = (HaskellQconid) reference.resolve();
+        HaskellModuledecl haskellModuledecl = PsiTreeUtil.findChildOfType(haskellFile, HaskellModuledecl.class);
+        assertEquals(haskellModuledecl.getQconid(),referencedElement);
     }
 
 

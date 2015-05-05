@@ -18,10 +18,7 @@ import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Resolves references to elements. Will be used in Go To Symbol as well as its inverse, Find Usages.
@@ -56,6 +53,28 @@ public class HaskellReference extends PsiReferenceBase<PsiNamedElement> implemen
     @NotNull
     @Override
     public ResolveResult[] multiResolve(boolean incompleteCode) {
+        if(myElement instanceof HaskellQconid){
+            PsiElement parent = ((HaskellQconid) myElement).getParent();
+            if( parent instanceof HaskellImpdecl){
+                HaskellQconid haskellQconid = (HaskellQconid) myElement;
+                String moduleName = haskellQconid.getText();
+                List<HaskellFile> filesByModuleName = HaskellModuleIndex.getFilesByModuleName(myElement.getProject(), moduleName, GlobalSearchScope.projectScope(myElement.getProject()));
+                List<ResolveResult> results = new ArrayList<ResolveResult>(20);
+                for (HaskellFile haskellFile : filesByModuleName) {
+                    Collection<HaskellModuledecl> childrenOfType = PsiTreeUtil.findChildrenOfType(haskellFile, HaskellModuledecl.class);
+                    HaskellModuledecl next = childrenOfType.iterator().next();
+                    HaskellQconid qconid = next.getQconid();
+                    if (qconid != null) {
+                        results.add(new PsiElementResolveResult(qconid));
+                    }
+                }
+                return results.toArray(new ResolveResult[results.size()]);
+            }
+            if (parent instanceof  HaskellModuledecl){
+//                return new ResolveResult[] {new PsiElementResolveResult(myElement)};
+                return EMPTY_RESOLVE_RESULT;
+            }
+        }
         // We should only be resolving varids or conids.
         if (!(myElement instanceof HaskellVarid || myElement instanceof HaskellConid)) {
             return EMPTY_RESOLVE_RESULT;

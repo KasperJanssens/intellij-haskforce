@@ -1,6 +1,7 @@
 package com.haskforce.psi.references;
 
 import com.haskforce.cabal.CabalLanguage;
+import com.haskforce.psi.HaskellQconid;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.patterns.PsiElementPattern;
 import com.intellij.psi.PsiNamedElement;

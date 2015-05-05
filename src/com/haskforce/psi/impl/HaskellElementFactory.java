@@ -7,8 +7,11 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFileFactory;
 import com.intellij.psi.PsiWhiteSpace;
 import com.intellij.psi.util.PsiTreeUtil;
+import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.List;
 
 /**
  * Performs creation of element types.
@@ -40,6 +43,26 @@ public class HaskellElementFactory {
         PsiElement e = createExpressionFromText(project, name + "uniq = " + name).getFirstChild();
         if (e instanceof HaskellConid) return (HaskellConid) e;
         return null;
+    }
+
+    /**
+     * Takes a name and returns a Psi node of that name, or null.
+     */
+    @Nullable
+    public static HaskellQconid createQconidFromText(@NotNull Project project, List<String> dirs, String moduleName) {
+        dirs.add(moduleName);
+        String moduleDeclaration = "module " + StringUtils.join(dirs,".") + " where";
+        HaskellFile fileFromText = createFileFromText(project, moduleDeclaration);
+        HaskellQconid haskellQconid = PsiTreeUtil.findChildOfType(fileFromText, HaskellQconid.class);
+        return haskellQconid;
+    }
+
+
+    public static PsiElement createQconidFromText(Project project, String newName) {
+        String moduleDeclaration = "module " + newName + " where";
+        HaskellFile fileFromText = createFileFromText(project, moduleDeclaration);
+        HaskellQconid haskellQconid = PsiTreeUtil.findChildOfType(fileFromText, HaskellQconid.class);
+        return haskellQconid;
     }
 
     /**
@@ -99,4 +122,5 @@ public class HaskellElementFactory {
     public static HaskellFile createFileFromText(@NotNull Project project, @NotNull String text) {
         return (HaskellFile) PsiFileFactory.getInstance(project).createFileFromText("A.hs", HaskellLanguage.INSTANCE, text);
     }
+
 }
