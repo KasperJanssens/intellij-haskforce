@@ -48,6 +48,18 @@ public class HaskellRenameTest extends HaskellLightPlatformCodeInsightFixtureTes
 
     }
 
+    public void testModulePartOfHierarchy () {
+        PsiFile[] psiFiles = myFixture.configureByFiles("Hierarchy/APackage/ImportDeclaration.hs",
+                "Hierarchy/APackage/Reference.hs",
+                "Hierarchy/Hierarchy.cabal");
+        String newName = "BPackage";
+        myFixture.renameElementAtCaret(newName);
+        myFixture.checkResultByFile("Hierarchy/BPackage/ImportDeclaration.hs", "Hierarchy/APackage/ImportDeclaration-after.hs", false);
+        myFixture.checkResultByFile("Hierarchy/BPackage/Reference.hs","Hierarchy/APackage/Reference-after.hs", false);
+        myFixture.checkResultByFile("Hierarchy/Hierarchy.cabal","Hierarchy/Hierarchy-after.cabal", false);
+
+    }
+
     public void testRenameImport_CaretOnModule () {
         PsiFile[] psiFiles = myFixture.configureByFiles("ImportDeclaration_CaretOnModule/ImportDeclaration.hs", "ImportDeclaration_CaretOnModule/RenameImport.hs","ImportDeclaration_CaretOnModule/ImportDeclaration.cabal");
         PsiFile importDeclaration = psiFiles[0];
