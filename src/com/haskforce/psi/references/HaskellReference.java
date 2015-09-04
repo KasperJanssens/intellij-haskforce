@@ -9,8 +9,16 @@ import com.haskforce.psi.*;
 import com.haskforce.psi.impl.HaskellPsiImplUtil;
 import com.haskforce.utils.HaskellUtil;
 import com.intellij.codeInsight.lookup.LookupElement;
+import com.intellij.execution.ExecutionException;
+import com.intellij.execution.configurations.GeneralCommandLine;
+import com.intellij.execution.configurations.ParametersList;
+import com.intellij.openapi.editor.Editor;
+import com.intellij.openapi.editor.LogicalPosition;
+import com.intellij.openapi.editor.VisualPosition;
+import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.TextRange;
+import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.psi.*;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.util.PsiTreeUtil;
@@ -19,6 +27,10 @@ import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.util.*;
 
 /**
@@ -80,6 +92,32 @@ public class HaskellReference extends PsiReferenceBase<PsiNamedElement> implemen
         if (!(myElement instanceof HaskellVarid || myElement instanceof HaskellConid)) {
             return EMPTY_RESOLVE_RESULT;
         }
+
+        LogicalPosition logicalPosition = getLogicalPositionOfElement(myElement);
+
+        GeneralCommandLine commandLine = new GeneralCommandLine("/home/developer/.cabal/bin/stack");
+        ParametersList parametersList = commandLine.getParametersList();
+        parametersList.addParametersString("ide");
+        parametersList.addParametersString("start");
+        commandLine.setRedirectErrorStream(true);
+        Process process;
+        try {
+            process = commandLine.createProcess();
+        } catch (ExecutionException e) {
+            throw new RuntimeException(e.toString());
+        }
+        BufferedReader input = new BufferedReader(new InputStreamReader(process.getInputStream()));
+        BufferedWriter output = new BufferedWriter(new OutputStreamWriter(process.getOutputStream()));
+        try {
+            output.write("{\n'tag':'RequestGetSourceErrors',\n'content'=[]\n}");
+            output.newLine();
+            output.flush();
+            String line = input.readLine();
+
+        } catch(Exception e){
+            e.getMessage();
+        }
+
 
         Project project = myElement.getProject();
         final List<PsiNamedElement> namedElements = HaskellUtil.findDefinitionNode(project, name, myElement);
@@ -261,6 +299,19 @@ public class HaskellReference extends PsiReferenceBase<PsiNamedElement> implemen
             results.addAll(HaskellUtil.matchGlobalNamesQualified(namedElements, qualifiedCallName, imports));
             return results.toArray(new ResolveResult[results.size()]);
         }
+    }
+
+    private LogicalPosition getLogicalPositionOfElement(PsiElement element) {
+        FileEditorManager fileEditorManager = FileEditorManager.getInstance(element.getProject());
+        if (fileEditorManager == null){
+            return null;
+        }
+        Editor textEditor = fileEditorManager.getSelectedTextEditor();
+        if (textEditor == null){
+            return null;
+        }
+
+        return textEditor.offsetToLogicalPosition(element.getTextOffset());
     }
 
     private @NotNull List<PsiElementResolveResult> handleImportReferences(@NotNull HaskellImpdecl haskellImpdecl,
