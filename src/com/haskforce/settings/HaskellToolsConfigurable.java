@@ -11,6 +11,7 @@ import com.intellij.openapi.ui.TextFieldWithBrowseButton;
 import com.intellij.ui.JBColor;
 import com.intellij.ui.RawCommandLineEditor;
 import com.intellij.ui.TextAccessor;
+import com.intellij.ui.TitledSeparator;
 import com.intellij.util.messages.Topic;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
@@ -48,6 +49,7 @@ public class HaskellToolsConfigurable implements SearchableConfigurable {
     private JTextField ghcModiVersion;
     private RawCommandLineEditor ghcModiFlags;
     private JTextAccessorField ghcModiTimeout;
+    private TextFieldWithBrowseButton stackPath;
 
     private List<Property> properties;
 
@@ -62,8 +64,10 @@ public class HaskellToolsConfigurable implements SearchableConfigurable {
                          ghcModAutoFind, ghcModVersion, "version"),
                 new Tool(project, "ghc-modi", ToolKey.GHC_MODI_KEY, ghcModiPath, ghcModiFlags,
                          ghcModiAutoFind, ghcModiVersion, "version", SettingsChangeNotifier.GHC_MODI_TOPIC),
-                new PropertyField(ToolKey.GHC_MODI_TIMEOUT_KEY, ghcModiTimeout, Long.toString(ToolKey.getGhcModiTimeout(project)))
+                new PropertyField(ToolKey.GHC_MODI_TIMEOUT_KEY, ghcModiTimeout, Long.toString(ToolKey.getGhcModiTimeout(project))),
+                new PropertyField(ToolKey.STACK_KEY, stackPath)
         );
+        GuiUtil.addFolderListener(stackPath,"stack");
         // Validate that we can only enter numbers in the timeout field.
         final Color originalBackground = ghcModiTimeout.getBackground();
         ghcModiTimeout.setInputVerifier(new InputVerifier() {

@@ -21,6 +21,7 @@ public class ToolKey {
 
     public static final String GHC_MODI_TIMEOUT_KEY = "ghcModiTimeout";
     public static final long GHC_MODI_TIMEOUT_DEFAULT = 5000;
+    public static final String STACK_KEY = "stack";
 
     public static long getGhcModiTimeout(@NotNull Project project) {
         final String timeout = PropertiesComponent.getInstance(project).getValue(GHC_MODI_TIMEOUT_KEY);

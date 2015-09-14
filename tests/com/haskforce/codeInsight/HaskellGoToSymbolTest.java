@@ -16,7 +16,7 @@ public class HaskellGoToSymbolTest extends HaskellLightPlatformCodeInsightFixtur
     }
 
     public void testGoToSymbolFunction_SymbolOnUsage(){
-        myFixture.configureByFile(getTestName(false)+".hs");
+        myFixture.configureByFiles(getTestName(false)+".hs", "codeInsight.cabal", "stack.yaml");
         PsiFile file = myFixture.getFile();
         String textOfFile = file.getText();
         int expectedStartOffset= textOfFile.indexOf("let seven") +4;

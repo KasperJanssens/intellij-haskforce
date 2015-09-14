@@ -244,5 +244,9 @@
       <implementation-class>com.haskforce.highlighting.annotation.external.GhcModi</implementation-class>
       <interface-class>com.haskforce.highlighting.annotation.external.GhcModi</interface-class>
     </component>
+    <component>
+      <implementation-class>com.haskforce.highlighting.annotation.external.Stack</implementation-class>
+      <interface-class>com.haskforce.highlighting.annotation.external.Stack</interface-class>
+    </component>
   </module-components>
 </idea-plugin>

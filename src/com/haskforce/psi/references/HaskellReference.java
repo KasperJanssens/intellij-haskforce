@@ -4,6 +4,8 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.haskforce.codeInsight.HaskellCompletionContributor;
+import com.haskforce.highlighting.annotation.external.*;
+import com.haskforce.highlighting.annotation.external.Stack;
 import com.haskforce.index.HaskellModuleIndex;
 import com.haskforce.psi.*;
 import com.haskforce.psi.impl.HaskellPsiImplUtil;
@@ -16,6 +18,8 @@ import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.editor.LogicalPosition;
 import com.intellij.openapi.editor.VisualPosition;
 import com.intellij.openapi.fileEditor.FileEditorManager;
+import com.intellij.openapi.module.Module;
+import com.intellij.openapi.module.ModuleUtilCore;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.openapi.util.text.StringUtil;
@@ -94,29 +98,9 @@ public class HaskellReference extends PsiReferenceBase<PsiNamedElement> implemen
         }
 
         LogicalPosition logicalPosition = getLogicalPositionOfElement(myElement);
-
-        GeneralCommandLine commandLine = new GeneralCommandLine("/home/developer/.cabal/bin/stack");
-        ParametersList parametersList = commandLine.getParametersList();
-        parametersList.addParametersString("ide");
-        parametersList.addParametersString("start");
-        commandLine.setRedirectErrorStream(true);
-        Process process;
-        try {
-            process = commandLine.createProcess();
-        } catch (ExecutionException e) {
-            throw new RuntimeException(e.toString());
-        }
-        BufferedReader input = new BufferedReader(new InputStreamReader(process.getInputStream()));
-        BufferedWriter output = new BufferedWriter(new OutputStreamWriter(process.getOutputStream()));
-        try {
-            output.write("{\n'tag':'RequestGetSourceErrors',\n'content'=[]\n}");
-            output.newLine();
-            output.flush();
-            String line = input.readLine();
-
-        } catch(Exception e){
-            e.getMessage();
-        }
+        Module module = ModuleUtilCore.findModuleForPsiElement(myElement);
+        Stack stack = module.getComponent(Stack.class);
+        String line = stack.exec("{\n'tag':'RequestGetSourceErrors',\n'content'=[]\n}");
 
 
         Project project = myElement.getProject();
